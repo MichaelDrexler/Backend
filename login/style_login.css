@@ -1,0 +1,193 @@
+@font-face {
+  font-family: Recoleta;
+  src: url(fonts/Recoleta/Recoleta\Regular.otf);
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: Recoleta;
+  src: url(fonts/Recoleta/Recoleta\ SemiBold.otf);
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: Favorit;
+  src: url(fonts/Favorit/Favorit_Light.otf);
+  font-weight: 200;
+}
+
+@font-face {
+  font-family: Favorit;
+  src: url(fonts/Favorit/Favorit_Regular.otf);
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: Favorit;
+  src: url(fonts/Favorit/Favorit_Bold.otf);
+  font-weight: 600;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: white;
+  margin: 0;
+  min-height: 100%;
+  font-family: "Helvetica Neue", Arial, sans-serif;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 2%;
+}
+
+a {
+  text-decoration: none;
+}
+
+#LFE-Logo {
+  font-family: "Helvetica Neue", Arial, sans-serif;
+  font-size: 0.75em;
+  font-weight: 400;
+  color: black;
+  margin: 0;
+}
+
+#LFE-Logo:hover {
+  color: #0076bb;
+}
+
+#TUM-Logo:hover {
+  fill: #0076bb;
+}
+
+.form-container {
+  width: 40%;
+  height: 40%;
+  margin: 50px auto;
+  /* display: flex;
+  justify-content: center;
+  align-items: center; */
+  text-align: center;
+}
+
+.form-container h1 {
+  font-family: Recoleta, sans-serif;
+  font-size: 2em;
+  font-weight: 500;
+  color: #f43543;
+  margin: 0;
+  padding: 0;
+}
+
+.form-container h3 {
+  font-family: Favorit, sans-serif;
+  font-size: 1.4em;
+  font-weight: 200;
+  color: #707d8a;
+  margin-bottom: 25px;
+  margin-top: 10px;
+}
+
+.form-container input {
+  height: 50px;
+  width: 350px;
+  border: 1px solid;
+  border-color: #dddddd;
+  border-radius: 8px;
+  padding-left: 50px;
+  padding-right: 40px;
+  /* margin-bottom: 15px; */
+  font-family: Favorit, sans-serif;
+  font-size: 0.875em;
+  font-weight: 200;
+  /* text-indent: 50px; */
+}
+
+.form-container input:focus {
+  border-color: #f43543;
+  outline: none;
+}
+
+::placeholder {
+  color: #707d8a;
+}
+
+.form-container button {
+  height: 50px;
+  width: 350px;
+  background-color: #f43543;
+  color: white;
+  border: 1px solid;
+  border-color: #f43543;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  font-family: Favorit, sans-serif;
+  font-size: 0.875em;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.1s ease-in-out;
+}
+
+.form-container button:hover {
+  background-color: #ff515e;
+  border-color: #ff515e;
+}
+
+.form-container span {
+  font-family: Favorit, sans-serif;
+  font-size: 0.875em;
+  font-weight: 400;
+}
+
+#log-in-switch, #register-switch {
+  color: #f43543;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.input-container {
+  position:relative;
+    padding:0;
+    margin:0 auto;
+    margin-bottom: 15px;
+    height: 50px;
+    width: 350px;
+    
+}
+
+.input-icon {
+  position:absolute;
+  bottom:15px;
+  left:15px;
+  width:20px;
+  height:20px;
+}
+
+.input-icon-right {
+  position:absolute;
+  bottom:15px;
+  right:15px;
+  width:20px;
+  height:20px;
+  cursor: pointer;
+}
+
+.input-icon-right-toggle {
+  visibility: hidden;
+  position:absolute;
+  bottom:15px;
+  right:15px;
+  width:20px;
+  height:20px;
+  cursor: pointer;
+}
+
+.log-in{
+  display: none;
+}
