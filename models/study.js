@@ -11,16 +11,23 @@ var StudySchema = new Schema ({
     description: {
         type: String,
     },
-    groups: [GroupSchema]
-    ,
     study_link: {
         type: String,
         default: 'link'
     },
+    groups: [GroupSchema],
+    tasks: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'SolutionAll'
+    }],
     solutions:[{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'SolutionAll'
-    }]
+    }],
+    user:  {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }
 },
     {
     timestamps: true

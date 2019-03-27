@@ -9,6 +9,9 @@ var TaskSchema = new Schema ({
     config: {
         type: String
     },
+    max: {
+        type: String
+    },
     task: {
         type: String
     }

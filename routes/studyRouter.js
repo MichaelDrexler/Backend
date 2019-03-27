@@ -1,6 +1,8 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var User = require('../models/user');
+var Group = require('../models/group').Group
+var Task = require('../models/task');
 var passport = require('passport');
 var mongoose = require('mongoose');
 var flash = require('connect-flash');
@@ -52,33 +54,50 @@ studyRouter.route('/:userId/:studyId')
 // Configuration and Creation of a Study
 studyRouter.route('/:userId')
 .post((req, res, next) => {
-  User.findById(req.params.userId)
-  .then((user) => {
-    if(!user){
-      var error = new Error ('User not found')
-    }
-    else {
-    var study = new Study({
-      name: req.body.name,
+  fillUp(req.body.Tetris_count, (tasks) => {
+    console.log(tasks)
+    Study.create({
+      study_name: req.body.study_name,
       description: req.body.description,
-       
-      tasks: [Tetris],
-      user: user._id
-    });
-    user.studies.push(study);
-    user.save()
-    // create link and send created study
-      .then((user) => {
-          user.studies[user.studies.length - 1].link = 'www.Creativity.tum/study/' + user._id + '/' 
-              + user.studies[user.studies.length - 1]._id;
-          user.save();
-          res.statusCode = 200;
-          res.setHeader('Content-Type', 'application/json');
-          res.json(user.studies[user.studies.length - 1]);
+      study_link: '',
+      groups: [],
+      tasks: tasks,
+      solutions: [],
+      user: req.params.userId
+    })
+    .then((study) => {
+      study.groups.push(group = new Group({group_name: req.body.group_name, size: req.body.size,}));
+      study.study_link = 'www.TumCreativity/' + req.params.userId + '/' + study._id + '/' + req.body.group_name;
+      study.save()
+      .then((study) => {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(study);
+      })
       }, (err) => next(err))
-    }
-  }).catch((err) => next(err))
+    .catch((err) => next(err));
+  })
+  function fillUp(count, callback){
+    
+    Task.countDocuments({task_type: 'Tetris'})
+    .then(numberItems => {
+      var random = [];
+      for(i=0;i<count;i++){
+        random[i] = Math.floor((Math.random() * numberItems) + 1);
+      }
+      console.log(random);
+      Task.find({task_type: 'Tetris', 'config': {$in:random}})
+      .then(tasks => {
+        var task_ids = []
+        for(i=0;i<tasks.length;i++){
+          task_ids[i]=tasks[i]._id;
+        }
+        callback(task_ids)        
+      })
+  })
+}
 })
+
 // Deletion of a certain Study
 .delete((req, res, next) => {
   User.findById(req.params.userId)
@@ -108,5 +127,6 @@ studyRouter.route('/:userId')
     }).catch((err) => next(err));
   }).catch((err) => next(err));
 });
+
 
 module.exports = studyRouter;

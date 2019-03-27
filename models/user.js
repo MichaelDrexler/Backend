@@ -4,7 +4,6 @@ var passportLocalMongoose = require('passport-local-mongoose');
 var StudySchema = require('./study').StudySchema;
 
 var UserSchema = new Schema({
-    _id: Schema.Types.ObjectId,
     admin:   {
         type: Boolean,
         default: false

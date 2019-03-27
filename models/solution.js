@@ -6,6 +6,10 @@ var SolutionSchema = new Schema ({
         type: Array,
         required: true
     },
+    unused: {
+        type: String,
+        default: " "
+    },
     task: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Task'
