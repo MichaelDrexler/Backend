@@ -13,7 +13,7 @@ var TaskSchema = new Schema ({
         type: String
     },
     task: {
-        type: String
+        type: Array
     }
 });
 

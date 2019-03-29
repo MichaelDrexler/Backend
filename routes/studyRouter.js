@@ -7,6 +7,7 @@ var passport = require('passport');
 var mongoose = require('mongoose');
 var flash = require('connect-flash');
 var fs = require('fs');
+var shuffle = require('knuth-shuffle').knuthShuffle;
 
 var Study = require('../models/study').Study; 
 
@@ -51,51 +52,37 @@ studyRouter.route('/:userId/:studyId')
         res.json(lsg)
     });
 })
+
+//
 // Configuration and Creation of a Study
+//
 studyRouter.route('/:userId')
 .post((req, res, next) => {
-  fillUp(req.body.Tetris_count, (tasks) => {
-    console.log(tasks)
-    Study.create({
-      study_name: req.body.study_name,
-      description: req.body.description,
-      study_link: '',
-      groups: [],
-      tasks: tasks,
-      solutions: [],
-      user: req.params.userId
-    })
-    .then((study) => {
-      study.groups.push(group = new Group({group_name: req.body.group_name, size: req.body.size,}));
-      study.study_link = 'www.TumCreativity/' + req.params.userId + '/' + study._id + '/' + req.body.group_name;
-      study.save()
-      .then((study) => {
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json(study);
+
+  // Auswählen zufälliger Tasks in jeweils gewünschter Anzahl - siehe untern
+  fetchRandomTasks(req.body.Tetris_count, req.body.Neue_Wörter_count, (tasks) => {
+      //console.log(tasks);
+        Study.create({
+          study_name: req.body.study_name,
+          description: req.body.description,
+          study_link: '',
+          groups: [],
+          tasks: tasks,
+          solutions: [],
+          user: req.params.userId
+        })
+        .then((study) => {
+          study.groups.push(group = new Group({group_name: req.body.group_name, size: req.body.size,}));
+          study.study_link = 'www.TumCreativity/' + req.params.userId + '/' + study._id + '/' + req.body.group_name;
+          study.save()
+          .then((study) => {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.json(study);
+          })
+          }, (err) => next(err))
+        .catch((err) => next(err));
       })
-      }, (err) => next(err))
-    .catch((err) => next(err));
-  })
-  function fillUp(count, callback){
-    
-    Task.countDocuments({task_type: 'Tetris'})
-    .then(numberItems => {
-      var random = [];
-      for(i=0;i<count;i++){
-        random[i] = Math.floor((Math.random() * numberItems) + 1);
-      }
-      console.log(random);
-      Task.find({task_type: 'Tetris', 'config': {$in:random}})
-      .then(tasks => {
-        var task_ids = []
-        for(i=0;i<tasks.length;i++){
-          task_ids[i]=tasks[i]._id;
-        }
-        callback(task_ids)        
-      })
-  })
-}
 })
 
 // Deletion of a certain Study
@@ -128,5 +115,53 @@ studyRouter.route('/:userId')
   }).catch((err) => next(err));
 });
 
+
+// Definition Funktion, die die gewünschte Anzahl an zufälligen Tasks der Typen Tetris und Neue_Wörter aus DB filtert
+function fetchRandomTasks(Tetris_count, NeueWörter_count, callback){
+  parseInt(Tetris_count, 10);
+  parseInt(NeueWörter_count, 10);
+  var tasks = [];
+  
+  // Array mit zufällig ausgewählten Tetris Tasks
+  let randomiseTetris = function(Tetris_count){
+    return new Promise (function(resolve, reject){
+      //Finden aller ids von Tetris Tasks
+      Task.find({task_type: 'Tetris'}, { '_id': 1 })
+      .then(ids => {
+        // shuffle array, as per here  https://github.com/coolaj86/knuth-shuffle
+        var arrTetris = shuffle(ids.slice(0))  
+        // get only the first numberOfItems of the shuffled array
+        arrTetris.splice(Tetris_count, arrTetris.length - Tetris_count);
+        //tasks.push(arr);
+        resolve(arrTetris)
+      })
+    })
+  }
+
+  // Array mit zufällig ausgewählten Neue Wörter Tasts
+  let randomiseNeueWörter = function(NeueWörter_count){
+    return new Promise (function(resolve, reject){
+      Task.find({task_type: 'Neue_Wörter'}, { '_id': 1 })
+      .then(ids => {
+        // shuffle array, as per here  https://github.com/coolaj86/knuth-shuffle
+        var arrNeueWörter = shuffle(ids.slice(0))  
+        // get only the first numberOfItems of the shuffled array
+        arrNeueWörter.splice(NeueWörter_count, arrNeueWörter.length - NeueWörter_count);
+        //tasks.push(arr);
+        resolve(arrNeueWörter)
+      })
+    })
+  }
+
+  //Zusammenführen der beiden Arrays zu einem Array und callback
+  randomiseTetris().then(resolve=>{
+    tasks = resolve;
+    return randomiseNeueWörter().then(resolve=> {
+     tasks = tasks.concat(resolve);
+      callback(tasks);
+    })
+  })
+}
+    
 
 module.exports = studyRouter;

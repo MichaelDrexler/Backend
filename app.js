@@ -16,7 +16,7 @@ var usersRouter = require('./routes/usersRouter');
 var solutionRouter = require('./routes/solutionRouter');
 var studyRouter = require('./routes/studyRouter');
 
-var testRouter = require('./routes/testRouter');
+var insertTaskRouter = require('./routes/insertTaskRouter');
 
 //Connection zu Datenbank und ODM mongoose
 const mongoose = require('mongoose');
@@ -56,7 +56,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/solution', solutionRouter);
 
-app.use('/test', testRouter);
+app.use('/insertTasks', insertTaskRouter);
 app.use('/study', studyRouter);
 
 
