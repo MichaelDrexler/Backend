@@ -8,7 +8,10 @@ var UserSchema = new Schema({
         type: Boolean,
         default: false
     },
-    studies: [StudySchema]
+    studies: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Study'
+    }]
 });
 
 UserSchema.plugin(passportLocalMongoose);

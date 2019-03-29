@@ -60,6 +60,7 @@ studyRouter.route('/:userId')
 .post((req, res, next) => {
 
   // Auswählen zufälliger Tasks in jeweils gewünschter Anzahl - siehe untern
+
   fetchRandomTasks(req.body.Tetris_count, req.body.Neue_Wörter_count, (tasks) => {
       //console.log(tasks);
         Study.create({
@@ -76,6 +77,14 @@ studyRouter.route('/:userId')
           study.study_link = 'www.TumCreativity/' + req.params.userId + '/' + study._id + '/' + req.body.group_name;
           study.save()
           .then((study) => {
+            
+            User.findById(req.params.userId)
+            .then((user) => {
+              console.log(study._id)
+              user.studies.push(study._id);
+              user.save();
+              console.log(user)
+            })
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
             res.json(study);
@@ -95,10 +104,11 @@ studyRouter.route('/:userId')
     .then((user) => {
       res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');
-      res.send('Study ' + StudyName + ' deleted');
+      res.send({success: true, status: 'Study ' + StudyName + ' deleted'});
     }).catch((err) => next(err));
   }).catch((err) => next(err));
 })
+
 //Alteration of a certain Study Name
 .put((req, res, next) => {
   User.findById(req.params.userId)

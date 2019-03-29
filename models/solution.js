@@ -43,6 +43,10 @@ var SolutionAllSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Task'
     },
+    study:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Study'
+    }
 },
     {
     timestamps: true

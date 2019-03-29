@@ -1,8 +1,8 @@
 // request neue Wörter
-{"solution": "enhance, silly, vane, pep, pin", "unused": "e, n, n, p, c, t, o, u", "max": "30", "task": "5c99db3bb93dd42c5853bd51", "config": "1"}
+{"solution": "leather, shwam, thonro", "unused": "w, s, d, d, n, h, l" , "task": "5c9c9b5bfda95f26c855b20b"}
 
-// Erstellen der Studie
-{"study_name": "myStudy", "descr": "blabla", "Neue_wörter": "10", "Tetris": "10","groups":[{"name_1": "a", "size_1":"20"},{"name_2": "b", "size_2":"30"}]}
+// request Tetris
+{"solution": ["0 0 0 0 0 0 0 0 0 0","0 0 0 0 0 0 0 0 0 0","0 0 0 0 0 0 0 0 0 0","1 1 1 1 1 1 1 1 1 1","2 2 2 2 2 2 2 2 2 2","1 1 1 1 1 1 1 1 1 1","2 2 2 2 2 2 2 2 2 2","1 1 1 1 1 1 1 1 1 1","0 0 0 0 0 0 0 0 0 0","0 0 0 0 0 0 0 0 0 0"], "task": "5c9c9b5bfda95f26c855b214"}
 
 // Erstellen einer Studie aktuell
-{"study_name": "global", "description": "very good", "group_name": "groupAwesome", "size": "30", "Tetris_count": "10"}
+{"study_name": "global", "description": "very good", "group_name": "groupAwesome", "size": "30", "Tetris_count": "10", "Neue_Wörter_count": "10"}
