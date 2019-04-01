@@ -10,6 +10,7 @@ var fs = require('fs');
 var shuffle = require('knuth-shuffle').knuthShuffle;
 
 var Study = require('../models/study').Study; 
+var SolutionAll = require('../models/solution').SolutionAll;
 
 var studyRouter = express.Router();
 
@@ -19,17 +20,27 @@ studyRouter.use(bodyParser.json());
 studyRouter.route('/:userId')
 .get((req, res, next) => {
   User.findById(req.params.userId)
-  .then((user) => {
-          var studies = [];
-          for (i = 0; i < user.studies.length; i ++){
-             studies[i] = new Object({studyName: user.studies[i].name});
-          };
-          res.statusCode = 200;
-          res.setHeader('Content-Type', 'application/json')
-          res.json(studies);
+  .populate({
+    path:     'studies',			
+    populate: { path:  'tasks',
+          model: 'Task' }})
+    .then(user => {
+    // Ausgabe der gesamten Studien
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json')
+    res.json(user.studies);
+
+    // oder aufbereitet
+    // Aufbereiten der daten - Senden nur der Variablen "study_name" und der Objecte "groups"
+    /*var studies = [];
+    for (i = 0; i < user.studies.length; i ++){
+        studies[i] = new Object({study_name: user.studies[i].study_name, groups: user.studies[i].groups});
+    };
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json')
+    res.json(studies);*/
   },(err) => next(err))
   .catch((err) => next(err)); 
-  //"New Study"-btn guides to a form for specifying the new Study
 });
 
 // Access of solutions of a certain Study
@@ -38,6 +49,11 @@ studyRouter.route('/:userId/:studyId')
     SolutionAll.find({study: req.params.studyId})
     .populate('solution')
     .then((solutions) => {
+        //console.log(solutions)
+        //  res.statusCode = 200;
+        // res.setHeader('Content-Type', 'application/json');
+        // res.json(solutions)
+        // Aufbereiten der Daten - Senden nur der Lösung und der Werte "neu" und "useful"
         lsg = [];
         for(i = 0; i < solutions.length; i ++){
             var solution = new Object({
@@ -50,7 +66,8 @@ studyRouter.route('/:userId/:studyId')
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         res.json(lsg)
-    });
+    }, err => next(err))
+    .catch(err => next(err));
 })
 
 //
@@ -73,17 +90,17 @@ studyRouter.route('/:userId')
           user: req.params.userId
         })
         .then((study) => {
-          study.groups.push(group = new Group({group_name: req.body.group_name, size: req.body.size,}));
+          req.body.groups.forEach(function(item){
+            study.groups.push(item);
+          });
           study.study_link = 'www.TumCreativity/' + req.params.userId + '/' + study._id + '/' + req.body.group_name;
           study.save()
           .then((study) => {
             
             User.findById(req.params.userId)
             .then((user) => {
-              console.log(study._id)
               user.studies.push(study._id);
               user.save();
-              console.log(user)
             })
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
@@ -93,6 +110,24 @@ studyRouter.route('/:userId')
         .catch((err) => next(err));
       })
 })
+
+//Alteration of a certain Study Name
+.put((req, res, next) => {
+  User.findById(req.params.userId)
+  .then((user) => {
+    // not existig Study not handeled due to impossibility to access not existing things
+    var StudyName = user.studies.id(req.params.studyId).name;
+    user.studies.id(req.params.studyId).name = req.body.name;
+    // hier Setzten der anderen Parameter
+    user.save()
+    .then((user) => {
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.send('Study Name changed to ' + StudyName);
+    }).catch((err) => next(err));
+  }).catch((err) => next(err));
+})
+
 
 // Deletion of a certain Study
 .delete((req, res, next) => {
@@ -107,24 +142,7 @@ studyRouter.route('/:userId')
       res.send({success: true, status: 'Study ' + StudyName + ' deleted'});
     }).catch((err) => next(err));
   }).catch((err) => next(err));
-})
-
-//Alteration of a certain Study Name
-.put((req, res, next) => {
-  User.findById(req.params.userId)
-  .then((user) => {
-    // not existig Study not handeled due to impossibility to access not existing things
-    var StudyName = user.studies.id(req.params.studyId).name;
-    user.studies.id(req.params.studyId).name = req.body.name;
-    user.save()
-    .then((user) => {
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json');
-      res.send('Study Name changed to ' + StudyName);
-    }).catch((err) => next(err));
-  }).catch((err) => next(err));
 });
-
 
 // Definition Funktion, die die gewünschte Anzahl an zufälligen Tasks der Typen Tetris und Neue_Wörter aus DB filtert
 function fetchRandomTasks(Tetris_count, NeueWörter_count, callback){
@@ -134,16 +152,17 @@ function fetchRandomTasks(Tetris_count, NeueWörter_count, callback){
   
   // Array mit zufällig ausgewählten Tetris Tasks
   let randomiseTetris = function(Tetris_count){
+    console.log(Tetris_count)
     return new Promise (function(resolve, reject){
       //Finden aller ids von Tetris Tasks
       Task.find({task_type: 'Tetris'}, { '_id': 1 })
       .then(ids => {
         // shuffle array, as per here  https://github.com/coolaj86/knuth-shuffle
-        var arrTetris = shuffle(ids.slice(0))  
+        var arrTetris = shuffle(ids.slice(0)); 
         // get only the first numberOfItems of the shuffled array
         arrTetris.splice(Tetris_count, arrTetris.length - Tetris_count);
-        //tasks.push(arr);
-        resolve(arrTetris)
+        // give result back
+        resolve(arrTetris);
       })
     })
   }
@@ -157,16 +176,16 @@ function fetchRandomTasks(Tetris_count, NeueWörter_count, callback){
         var arrNeueWörter = shuffle(ids.slice(0))  
         // get only the first numberOfItems of the shuffled array
         arrNeueWörter.splice(NeueWörter_count, arrNeueWörter.length - NeueWörter_count);
-        //tasks.push(arr);
-        resolve(arrNeueWörter)
+        // give result back
+        resolve(arrNeueWörter);
       })
     })
   }
 
   //Zusammenführen der beiden Arrays zu einem Array und callback
-  randomiseTetris().then(resolve=>{
+  randomiseTetris(Tetris_count).then(resolve=>{
     tasks = resolve;
-    return randomiseNeueWörter().then(resolve=> {
+    return randomiseNeueWörter(NeueWörter_count).then(resolve=> {
      tasks = tasks.concat(resolve);
       callback(tasks);
     })

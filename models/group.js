@@ -3,6 +3,9 @@ var Schema = mongoose.Schema;
 var Solution = require('./solution').Solution;
 
 var GroupSchema = new Schema ({
+    group_number: {
+        type: Number
+    },
     group_name: {
         type: String
     },

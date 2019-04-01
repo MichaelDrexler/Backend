@@ -43,10 +43,10 @@ app.use(cookieParser());
 app.use(session({
   name: 'session-id',
   secret: '12345-67890-09876-54321',
-  saveUninitialized: false,
+  saveUninitialized: true,
   resave: false,
   store: new FileStore(),
-  expires: Date.now() + ((3600/2)*1000)
+  expires: Date.now() + ((3600)*1000)
 }));
 
 app.use(passport.initialize());

@@ -18,7 +18,7 @@ var StudySchema = new Schema ({
     groups: [GroupSchema],
     tasks: [{
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'SolutionAll'
+            ref: 'Task'
     }],
     solutions:[{
         type: mongoose.Schema.Types.ObjectId,
