@@ -24,7 +24,7 @@ insertTaskRouter.route('/')
             {task_type:"Neue_Wörter",config:"3",max:"24",task:["desk", "computer", "lamp", "scissors"]},
             {task_type:"Neue_Wörter",config:"4",max:"15",task:["sky", "earth", "sun", "star"]},
             {task_type:"Neue_Wörter",config:"5",max:"28",task:["thought", "illuminate", "combine", "idea"]},
-            {task_type:"Neue_wörter",config:"6",max:"29",task:["calculate", "number", "number", "operator"]},
+            {task_type:"Neue_Wörter",config:"6",max:"29",task:["calculate", "number", "number", "operator"]},
             {task_type:"Neue_Wörter",config:"7",max:"23",task:["fwkgen", "dreg", "jdhnst", "kllmiut"]},
             {task_type:"Neue_Wörter",config:"8",max:"24",task:["car", "street", "road", "supermarket"]},
             {task_type:"Neue_Wörter",config:"9",max:"23",task:["book", "letter", "word", "sentence"]},

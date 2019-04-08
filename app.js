@@ -55,9 +55,10 @@ app.use(passport.session());
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/solution', solutionRouter);
+app.use('/study', studyRouter);
 
 app.use('/insertTasks', insertTaskRouter);
-app.use('/study', studyRouter);
+
 
 
 //LogIn Barrier
@@ -77,6 +78,7 @@ app.use(auth);
 
 //app.use(express.static(path.join(__dirname, 'public')));
 //app.use('/study', studyRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

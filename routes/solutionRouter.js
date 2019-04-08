@@ -21,7 +21,7 @@ solutionRouter.use(bodyParser.json());
 // Einsehen der Ergebnisse einzelner Studien
 // Eingabe der Lösungen eine VP und Speichern in der Datenbank
 
-solutionRouter.route('/:userId/:studyId/:groupNr')
+solutionRouter.route('/:studyId/:groupId')
 .get((req, res, next) => {
     // Benennen der Session als Versuchsperson - in SolutionsAll wird jeder Lösung eine Session-Id zugeordnet
     req.session.user = 'VP';

@@ -20,17 +20,23 @@ function usefulValue(req, callback){
             var länge = 0;
             var useful = 0;
             for(i=0;i<req.body.solution.length;i++){
-                var re = new RegExp('^' + req.body.solution[i] + '$');
-                var words = require('an-array-of-english-words');
-                var Word = words.filter(word => word.match(re));
-                //wort.push(Word);
-                if (Word == '') {  
-                    console.log('Word "' + req.body.solution[i] + '" is not valid');
+                // Abfrage, ob Lösungswort gleich einem vorgegebenen Wort
+                if (task.task.includes(req.body.solution[i])) {
+                    console.log(req.body.solution + 'is not valid, equals given word')
                 }
-                else  {
-                    sol.push(req.body.solution[i]);
-                    length.push(req.body.solution[i].length)
-                    länge = länge + req.body.solution[i].length;
+                else {
+                    var re = new RegExp('^' + req.body.solution[i] + '$');
+                    var words = require('an-array-of-english-words');
+                    var Word = words.filter(word => word.match(re));
+                    //wort.push(Word);
+                    if (Word == '') {  
+                        console.log('Word "' + req.body.solution[i] + '" is not valid');
+                    }
+                    else  {
+                        sol.push(req.body.solution[i]);
+                        length.push(req.body.solution[i].length)
+                        länge = länge + req.body.solution[i].length;
+                    }
                 }
             };
             console.log('sol: ' + sol);
@@ -90,7 +96,8 @@ function usefulValue(req, callback){
         else {
             err = new Error('task_type not found');
         }
-    });
+    }, err => next(err))
+    .catch(err => next(err));
 };
 
 module.exports = usefulValue;

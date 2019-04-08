@@ -11,18 +11,17 @@ var StudySchema = new Schema ({
     description: {
         type: String,
     },
+    open: {
+        type: Boolean,
+        default: true
+    },
     study_link: {
-        type: String,
-        default: 'link'
+        type: Array
     },
     groups: [GroupSchema],
     tasks: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Task'
-    }],
-    solutions:[{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'SolutionAll'
     }],
     user:  {
         type: mongoose.Schema.Types.ObjectId,
