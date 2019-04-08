@@ -85,13 +85,33 @@ studyRouter.route('/:userId')
 // Access of solutions of a certain Study
 studyRouter.route('/:userId/:studyId')
 .get((req, res, next) => {
+    var study = new Object;
     SolutionAll.find({study: req.params.studyId})
     .populate('solution')
     .then((solutions) => {
+        var participants = [];
+        var participants_count = 0;
+        for (i=0;i<solutions.length;i++) {
+          if (participants.includes(solutions[i].VP_Id)){
+            continue
+          }
+          else {
+            participants.push(solutions[i].VP_Id)
+          }
+        }  
+        
+        console.log('ready to be counted' + participants);
+        participants_count = participants.length;
+
+        study.solutions = solutions;
+        study.participants = participants;
+        study.participants_count = participants_count
+        
         // Senden der gesamten Lösungen
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
-        res.json(solutions)
+        res.json(study)
+
 
         // Aufbereiten der Daten - Senden nur der Lösung und der Werte "neu" und "useful"
         /*lsg = [];
