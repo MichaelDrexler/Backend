@@ -48,6 +48,11 @@ function usefulValue(req, callback){
             parseInt(task.max, 10);
             console.log(task.max)
             useful = länge/task.max;
+
+            // Runden auf zwei Stellen nach dem Komma
+            useful = Math.round(useful*100);
+            useful = useful/100;
+
             //Rückgabewert
             callback(useful);
            
@@ -91,6 +96,10 @@ function usefulValue(req, callback){
             useful = count/task.max;
             console.log(task.max)
             //Rückgabewert
+
+            useful = Math.round(useful*100);
+            useful = useful/100;
+
             callback(useful);
         }
         else {

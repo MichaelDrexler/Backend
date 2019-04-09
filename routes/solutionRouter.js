@@ -167,11 +167,14 @@ let updateNeu = function(solution, body){
         // Ausgeben aller Einträgezu aktuellem Task und Aktualisieren des Neuheitswertes
         Solution.find({$and:[{'task': body.task}/*, {'_id':{$ne: solution._id}}*/]})
         .then((solutions) => {
-            //console.log('solu '+ solutions);
             if(solutions != null && N_max != 1) {
                 solutions.forEach(function(item){
+                    // Berechnung des neuen Neuartigkeitswert
                     item.neu = 1 - item.counter/N_max;
-                    //console.log('solutions.neu '+ item.neu);
+                    // Runden auf fünf Nachkommastellen
+                    item.neu = Math.round(item.neu*100000);
+                    item.neu = item.neu/100000;
+                    // Speichern des neuen Wertes
                     item.save();
                 })
             }
@@ -199,6 +202,10 @@ function actualizeSolutions(solution, body, callback, next) {
             console.log(solution)
             solution.counter = solution.counter + 1;
             solution.neu = 1 - (solution.counter/N_max);
+            // Runden auf fünf Nachkommastellen
+            solution.neu = Math.round(solution.neu*10000);
+            solution.neu = solution.neu/100000;
+            // Speichern
             solution.save()
             .then(solution => {
                 callback(solution)});
@@ -206,11 +213,13 @@ function actualizeSolutions(solution, body, callback, next) {
         //Aktualisieren des Neuheitswertes der anderen Lösungen zu diesem Task
         Solution.find({$and:[{'task': body.task}, {'_id':{$ne: solution.solution}}]})
         .then((solutions) => {
-            //console.log('solutions: '+ solutions);
             if(solutions != null && N_max != 1) {
                 solutions.forEach(function(item){
+                    // Berechnung des neuen Neuartigkeitswertes
                     item.neu = 1 - item.counter/N_max;
-                    //console.log('solutions.neu '+ item.neu);
+                    // Runden auf fünf Nachkommastellen
+                    item.neu = Math.round(item.neu*10000);
+                    item.neu = item.neu/100000;
                     item.save();
                 })
             }
