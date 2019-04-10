@@ -20,8 +20,12 @@ var StudySchema = new Schema ({
     },
     groups: [GroupSchema],
     tasks: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'Task'
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Task'
+    }],
+    solutions: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'SolutionAll'
     }],
     user:  {
         type: mongoose.Schema.Types.ObjectId,

@@ -106,9 +106,15 @@ solutionRouter.route('/:studyId/:groupId')
                                         VP_Id: req.session.id,
                                         study: req.params.studyId,
                                         task: solution.task
-                                        }).then(()=> {
-                                        resolve()  
-                                        })
+                                        }).then((solution)=> {
+                                            resolve();
+                                            Study.findById(req.params.studyId)
+                                            .then(study => {
+                                                study.solutions.push(solution._id);
+                                                study.save();
+                                            }, err => next(err)) 
+                                        }, err => next(err))
+                                        .catch(err => next(err));
                                     }) 
                                 }
                                 //Aktualisieren des Neuheitswertes der anderen Lösungen zu diesem Task
@@ -130,10 +136,16 @@ solutionRouter.route('/:studyId/:groupId')
                     study: req.params.studyId,
                     task: solution.task
                     })
-                    // Aktualisieren der Werte "neu" und "counter" in Solutions und damit auch in SolutionsAll
-                    // Funktion "actualizeSolution" siehe unten
                     .then((solution) => {
-                        //console.log('Lösung vor neu updet: ' + solution);
+                        // Referenz in Study anlegen
+                        Study.findById(req.params.studyId)
+                        .then(study => {
+                                study.solutions.push(solution._id);
+                                study.save();
+                        }, err => next(err)) 
+                
+                        // Aktualisieren der Werte "neu" und "counter" in Solutions und damit auch in SolutionsAll
+                        // Funktion "actualizeSolution" siehe unten
                         actualizeSolutions(solution, req.body, (solution) => {
                             //Rückmeldung über den Erfolg der Aktion
                             if (!solution) {

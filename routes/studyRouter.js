@@ -56,6 +56,7 @@ studyRouter.route('/:userId')
           study_link: [],
           groups: [],
           tasks: tasks,
+          solutions: [],
           user: req.params.userId
         })
         .then((study) => {
@@ -85,32 +86,45 @@ studyRouter.route('/:userId')
 // Access of solutions of a certain Study
 studyRouter.route('/:userId/:studyId')
 .get((req, res, next) => {
-    var study = new Object;
-    SolutionAll.find({study: req.params.studyId})
-    .populate('solution')
-    .then((solutions) => {
+    var study_view = new Object;
+
+    Study.findById(req.params.studyId)
+    .populate({
+      path: 'solutions',			
+      populate: { path: 'solution',
+                  model: 'Solution'
+                }})
+    .populate({
+      path: 'solutions',
+      populate: {
+                  path: 'task',
+                  model: 'Task'
+                }})
+    .populate('tasks')
+    .then(study => {
+       console.log(study);
         var participants = [];
         var participants_count = 0;
-        for (i=0;i<solutions.length;i++) {
-          if (participants.includes(solutions[i].VP_Id)){
+        for (i=0;i<study.solutions.length;i++) {
+          if (participants.includes(study.solutions[i].VP_Id)){
             continue
           }
           else {
-            participants.push(solutions[i].VP_Id)
+            participants.push(study.solutions[i].VP_Id)
           }
         }  
         
         console.log('ready to be counted' + participants);
         participants_count = participants.length;
 
-        study.solutions = solutions;
-        study.participants = participants;
-        study.participants_count = participants_count
+        study_view.study = study;
+        study_view.participants = participants;
+        study_view.participants_count = participants_count
         
         // Senden der gesamten Lösungen
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
-        res.json(study)
+        res.json(study_view)
 
 
         // Aufbereiten der Daten - Senden nur der Lösung und der Werte "neu" und "useful"
