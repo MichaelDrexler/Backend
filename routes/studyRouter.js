@@ -1,12 +1,8 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var User = require('../models/user');
-var Group = require('../models/group').Group
 var Task = require('../models/task');
 var passport = require('passport');
-var mongoose = require('mongoose');
-var flash = require('connect-flash');
-var fs = require('fs');
 var shuffle = require('knuth-shuffle').knuthShuffle;
 
 var Study = require('../models/study').Study; 
@@ -18,7 +14,7 @@ studyRouter.use(bodyParser.json());
 
 // User Page with Studies
 studyRouter.route('/:userId')
-.get((req, res, next) => {
+.get(/*passport.authenticate('jwt', { session: false }), */(req, res, next) => {
   User.findById(req.params.userId)
   .populate({
     path:     'studies',			
@@ -31,22 +27,13 @@ studyRouter.route('/:userId')
     res.setHeader('Content-Type', 'application/json')
     res.json(user.studies);
 
-    // oder aufbereitet
-    // Aufbereiten der Daten - Senden nur der Variablen "study_name" und der Objecte "groups"
-      /*var studies = [];
-      for (i = 0; i < user.studies.length; i ++){
-          studies[i] = new Object({study_name: user.studies[i].study_name, groups: user.studies[i].groups});
-      };
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json')
-      res.json(studies);*/
   },(err) => next(err))
   .catch((err) => next(err)); 
 })
 //
 // Configuration and Creation of a Study
 //
-.post((req, res, next) => {
+.post(/*passport.authenticate('jwt', { session: false }),*/ (req, res, next) => {
   // Auswählen zufälliger Tasks in jeweils gewünschter Anzahl - siehe untern
   fetchRandomTasks(req.body.Tetris_count, req.body.Neue_Wörter_count, (tasks) => {
       //console.log(tasks);
@@ -62,11 +49,17 @@ studyRouter.route('/:userId')
         .then((study) => {
           req.body.groups.forEach(function(item){
             study.groups.push(item);
-          });
-          req.body.groups.forEach(function(item){
-            study.study_link.push('www.creativity.lfe.mw.tum/' + study._id + '/' + item.group_name);
-          });
+          }, err => next(err));
           study.save()
+          .then(study => {
+            console.log(study);
+            req.body.groups.forEach(function(item){
+            study.study_link.push('www.creativity.lfe.mw.tum/' + study._id + '/' + item.group_id);
+            study.save();
+          });
+          }, err => next(err))
+          
+          
           .then((study) => {
             
             User.findById(req.params.userId)
@@ -85,7 +78,7 @@ studyRouter.route('/:userId')
 
 // Access of solutions of a certain Study
 studyRouter.route('/:userId/:studyId')
-.get((req, res, next) => {
+.get(/*passport.authenticate('jwt', { session: false }),*/(req, res, next) => {
     var study_view = new Object;
 
     Study.findById(req.params.studyId)
@@ -103,6 +96,7 @@ studyRouter.route('/:userId/:studyId')
     .populate('tasks')
     .then(study => {
        console.log(study);
+       // mean neu useful groupwise
         var participants = [];
         var participants_count = 0;
         for (i=0;i<study.solutions.length;i++) {
@@ -125,27 +119,12 @@ studyRouter.route('/:userId/:studyId')
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
         res.json(study_view)
-
-
-        // Aufbereiten der Daten - Senden nur der Lösung und der Werte "neu" und "useful"
-        /*lsg = [];
-        for(i = 0; i < solutions.length; i ++){
-            var solution = new Object({
-                solution: solutions[i].solution.solution,
-                neu: solutions[i].solution.neu,
-                useful: solutions[i].solution.useful
-        });
-        lsg[i] = solution;
-        };
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json(lsg)*/
     }, err => next(err))
     .catch(err => next(err));
 })
 
 //Alteration of a certain Study Name
-.put((req, res, next) => {
+.put(/*passport.authenticate('jwt', { session: false }),*/(req, res, next) => {
   // Check, if study obtained already one solution
   SolutionAll.findOne({study: req.params.studyId})
   .populate('study')
@@ -174,7 +153,7 @@ studyRouter.route('/:userId/:studyId')
           study.groups.push(item);
         });
         req.body.groups.forEach(function(item){
-          study.study_link.push('www.creativity.lfe.mw.tum/' + study._id + '/' + item.group_name);
+          study.study_link.push('www.creativity.lfe.mw.tum/' + study._id + '/' + item.group_name/*Group id*/);
         });
 
         // Speicher der Änderungen
@@ -192,7 +171,7 @@ studyRouter.route('/:userId/:studyId')
 })
 
 // Deletion of a certain Study
-.delete((req, res, next) => {
+.delete(/*passport.authenticate('jwt', { session: false }),*/(req, res, next) => {
   Study.findByIdAndDelete(req.params.studyId)
   .then((study) => {
     res.statusCode = 200;
@@ -201,6 +180,30 @@ studyRouter.route('/:userId/:studyId')
   }, err => next(err))
   .catch((err) => next(err));
 });
+
+// Schließen einer Studie
+studyRouter.route('/:userId/:studyId/close')
+.put(/*passport.authenticate('jwt', { session: false }),*/(req, res, next) => {
+  Study.findById(req.params.studyId)
+  .then(study => {
+    if (study.open == true){
+      study.open = false;
+      // study.open = req,body.open
+      study.save();
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.send({success: true, status: 'Study ' + study.study_name + ' changed to closed'});
+    }
+    else if (study.open == false){
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.send({success: true, status: 'Study ' + study.study_name + ' already closed'});
+    }
+  }, err => next(err))
+  .catch(err => next(err));
+  
+})
+
 
 // Definition Funktion, die die gewünschte Anzahl an zufälligen Tasks der Typen Tetris und Neue_Wörter aus DB filtert
 function fetchRandomTasks(Tetris_count, NeueWörter_count, callback){
@@ -253,60 +256,3 @@ function fetchRandomTasks(Tetris_count, NeueWörter_count, callback){
     
 
 module.exports = studyRouter;
-
-
-// Versuch für put-method
-/*Study.findById(req.params.studyId)
-      .then((study) => {
-        fetchRandomTasks(req.body.Tetris_count, req.body.Neue_Wörter_count, (tasks) => {
-          console.log('task: ' + tasks);
-          if (req.body.study_name == undefined){
-            //return
-            console.log('study_name not changed')
-          }
-          else {
-            console.log(study);
-            study.study_name = req.body.study_name;
-          }
-
-          if (req.body.description == undefined) {
-            //return
-            console.log('description not changed')
-          }
-          else {
-            study.description = req.body.description;
-          }
-
-          if (req.body.open == study.open){
-            // return
-            console.log('open not changed')
-          }
-          else {
-            study.open = req.body.open;
-          }
-
-          if (req.body.study_link == null) {
-            return
-          }
-          else {
-            study.study_link = [];
-            req.body.groups.forEach(function(item){
-              study.study_link.push('www.creativity.lfe.mw.tum/' + study._id + '/' + item.group_name);
-            });
-          }
-
-          if (tasks == undefined)
-            return
-          else{
-              study.tasks = tasks;
-          }
-
-          if (req.body.groups == null) {
-            return
-          }
-          else {
-            study.groups = [];
-            req.body.groups.forEach(function(item){
-              study.groups.push(item);
-            });
-          }*/
