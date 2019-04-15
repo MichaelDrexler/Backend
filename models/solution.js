@@ -45,6 +45,10 @@ var SolutionAllSchema = new Schema({
     study:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Study'
+    },
+    group: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Group'
     }
 },
     {

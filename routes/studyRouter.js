@@ -15,111 +15,165 @@ studyRouter.use(bodyParser.json());
 // User Page with Studies
 studyRouter.route('/:userId')
 .get(/*passport.authenticate('jwt', { session: false }), */(req, res, next) => {
-  User.findById(req.params.userId)
-  .populate({
-    path:     'studies',			
-    populate: { path:  'tasks',
-          model: 'Task' }})
-    .then(user => {
-      console.log(user);
-    // Ausgabe der aller gesamten Studien mit Tasks
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json')
-    res.json(user.studies);
+  var studies_view = [];
 
-  },(err) => next(err))
-  .catch((err) => next(err)); 
+    Study.find({user: req.params.userId})
+    .populate('solutions')/*{
+      path: ,			
+      populate: { path: 'solution',
+                  model: 'SolutionAll'
+                }})*/
+    .then(studies => {
+       console.log(studies);
+
+    for(i=0;i<studies.length;i++){
+      var study_view = new Object;
+      var participants = [];
+      var participants_count = 0;
+      for (j=0;j<studies[i].solutions.length;j++) {
+        if (participants.includes(studies[i].solutions[j].VP_Id)){
+          continue
+        }
+        else {
+          participants.push(studies[i].solutions[j].VP_Id)
+        }
+      }  
+      
+      participants_count = participants.length;
+
+      study_view.study = studies[i];
+      study_view.participants = participants;
+      study_view.participants_count = participants_count
+
+      studies_view.push(study_view)
+      }
+    }, err => next(err)).then(()=>{
+       // Senden der gesamten Lösungen
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.json(studies_view);
+    }, err => next(err))
+    .catch(err => next(err));
 })
+
 //
 // Configuration and Creation of a Study
 //
 .post(/*passport.authenticate('jwt', { session: false }),*/ (req, res, next) => {
   // Auswählen zufälliger Tasks in jeweils gewünschter Anzahl - siehe untern
   fetchRandomTasks(req.body.Tetris_count, req.body.Neue_Wörter_count, (tasks) => {
-      //console.log(tasks);
+    // Kettung der einzelnen Bausteine der Studie
+    // Befüllen des Array groups
+    let fillUpGroups = function(){
+      return new Promise(function(resolve, reject){
+        var groups = [];
+        req.body.groups.forEach(function(item){
+          groups.push(item);
+        });
+        resolve(groups);
+      })
+    }
+   
+    // Studie erstellen und speichern
+    let createStudy = function(groups){
+      return new Promise(function(resolve, reject){
         Study.create({
           study_name: req.body.study_name,
           description: req.body.description,
           study_link: [],
-          groups: [],
+          groups: groups,
           tasks: tasks,
           solutions: [],
           user: req.params.userId
         })
-        .then((study) => {
-          req.body.groups.forEach(function(item){
-            study.groups.push(item);
-          }, err => next(err));
-          study.save()
-          .then(study => {
-            console.log(study);
-            req.body.groups.forEach(function(item){
-            study.study_link.push('www.creativity.lfe.mw.tum/' + study._id + '/' + item.group_id);
-            study.save();
-          });
-          }, err => next(err))
-          
-          
-          .then((study) => {
-            
-            User.findById(req.params.userId)
+        .then(study => {
+          resolve(study)
+        }, err => next(err));
+      })
+    };
+
+    // Befüllen des Arrays study_link mit den zuvor angelegten group._id s 
+    let fillUpLink = function(study){
+      return new Promise(function(resolve, reject){
+        study.groups.forEach(function(item){
+          study.study_link.push('www.creativity.lfe.mw.tum/' + study._id + '/' + item._id);
+        console.log(item)
+        });
+        resolve(study);
+      })
+    }
+
+    // Reihenfolge festlegen, study._id in User schreiben und Studie ausgeben
+    fillUpGroups().then(resolve => {
+      return createStudy(resolve).then(resolve => {
+        return fillUpLink(resolve).then(resolve => {
+          resolve.save();
+          User.findById(req.params.userId)
             .then((user) => {
-              user.studies.push(study._id);
+              user.studies.push(resolve._id);
               user.save();
             }, (err) => next(err))
-            res.statusCode = 200;
-            res.setHeader('Content-Type', 'application/json');
-            res.json(study);
-          })
-          }, (err) => next(err))
-        .catch((err) => next(err));
-      })
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.json(resolve);
+        }, err => next(err));
+      }, err => next(err));
+    }, err => next(err))
+    .catch(err => next(err));
+  })
 })
 
 // Access of solutions of a certain Study
 studyRouter.route('/:userId/:studyId')
 .get(/*passport.authenticate('jwt', { session: false }),*/(req, res, next) => {
-    var study_view = new Object;
+  var study_view = new Object;
 
-    Study.findById(req.params.studyId)
-    .populate({
-      path: 'solutions',			
-      populate: { path: 'solution',
-                  model: 'Solution'
-                }})
-    .populate({
-      path: 'solutions',
-      populate: {
-                  path: 'task',
-                  model: 'Task'
-                }})
-    .populate('tasks')
-    .then(study => {
-       console.log(study);
-       // mean neu useful groupwise
-        var participants = [];
-        var participants_count = 0;
-        for (i=0;i<study.solutions.length;i++) {
-          if (participants.includes(study.solutions[i].VP_Id)){
-            continue
-          }
-          else {
-            participants.push(study.solutions[i].VP_Id)
-          }
-        }  
-        
-        console.log('ready to be counted' + participants);
-        participants_count = participants.length;
+        Study.findById(req.params.studyId)
+        .populate({
+          path: 'solutions',			
+          populate: { path: 'solution',
+                      model: 'Solution'
+                    }})
+        .populate({
+          path: 'solutions',
+          populate: {
+                      path: 'task',
+                      model: 'Task'
+                    }})
+        .populate('tasks')
+        .then(study => {
+          // mean neu useful groupwise
+            var participants = [];
+            var participants_count = 0;
+            var neu_mean = 0;
+            var useful_mean = 0;
+            for (i=0;i<study.solutions.length;i++) {
+              neu_mean = neu_mean + study.solutions[i].solution.neu;
+              useful_mean = useful_mean + study.solutions[i].solution.useful;
 
-        study_view.study = study;
-        study_view.participants = participants;
-        study_view.participants_count = participants_count
-        
+              if (participants.includes(study.solutions[i].VP_Id)){
+                continue
+              }
+              else {
+                participants.push(study.solutions[i].VP_Id)
+              }
+            }  
+            
+            participants_count = participants.length;
+
+            study_view.study = study;
+            study_view.neu_mean = neu_mean/study.solutions.length;
+            study_view.useful_mean = useful_mean/study.solutions.length;
+            study_view.creative_mean = (neu_mean/study.solutions.length+useful_mean/study.solutions.length)/2;
+            study_view.participants = participants;
+            study_view.participants_count = participants_count;        
+      }, err => next(err))
+      .then (() => {
         // Senden der gesamten Lösungen
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
-        res.json(study_view)
-    }, err => next(err))
+        res.json(study_view)      
+      }, err => next(err))
     .catch(err => next(err));
 })
 

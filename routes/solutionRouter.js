@@ -105,7 +105,8 @@ solutionRouter.route('/:studyId/:groupId')
                                         solution: solution._id,
                                         VP_Id: req.session.id,
                                         study: req.params.studyId,
-                                        task: solution.task
+                                        task: solution.task,
+                                        group: req.params.groupId
                                         }).then((solution)=> {
                                             resolve();
                                             Study.findById(req.params.studyId)
@@ -134,7 +135,8 @@ solutionRouter.route('/:studyId/:groupId')
                     solution: solution._id,
                     VP_Id: req.session.id,
                     study: req.params.studyId,
-                    task: solution.task
+                    task: solution.task,
+                    group: req.params.groupId
                     })
                     .then((solution) => {
                         // Referenz in Study anlegen
