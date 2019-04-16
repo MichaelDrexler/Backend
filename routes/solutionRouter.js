@@ -95,7 +95,7 @@ solutionRouter.route('/:studyId/:groupId')
                                         console.log('sessionID ' + req.session.id)
                                         SolutionAll.create({
                                         solution: solution._id,
-                                        VP_id: req.session.id,
+                                        VP_id: req.sessionID,
                                         study: req.params.studyId,
                                         task: solution.task,
                                         group: req.params.groupId
@@ -125,7 +125,7 @@ solutionRouter.route('/:studyId/:groupId')
                     // Erzeugen eines Eintrages in SolutionAll
                     SolutionAll.create({
                     solution: solution._id,
-                    VP_id: req.session.id,
+                    VP_id: req.sessionID,
                     study: req.params.studyId,
                     task: solution.task,
                     group: req.params.groupId
