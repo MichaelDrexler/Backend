@@ -54,17 +54,18 @@ require("./configuration/passport")(passport);
 
 // Routes
 app.use("/users", userRouter);
-
-app.use(passport.initialize());
-
-
 app.use('/', indexRouter);
-//app.use('/users', usersRouter);
-app.use('/solution', solutionRouter);
 app.use('/study', studyRouter);
-
 app.use('/insertTasks', insertTaskRouter);
 
+app.set('trust proxy', 1) // trust first proxy
+app.use(session({
+  secret: 'visitacion31',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: true }
+}))
+app.use('/solution', solutionRouter);
 //app.use('/study', studyRouter);
 
 

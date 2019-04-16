@@ -1,14 +1,9 @@
 var express = require('express');
 var bodyParser = require('body-parser');
-var url = require('url');
-var mongoose = require('mongoose');
-var fs = require('fs');
 
 var usefulValue = require('./usefulValue');
-
 var Solution = require('../models/solution').Solution;
 var SolutionAll = require('../models/solution').SolutionAll;
-var User = require('../models/user');
 var Task = require('../models/task');
 var Study = require('../models/study').Study;
 
@@ -23,9 +18,6 @@ solutionRouter.use(bodyParser.json());
 
 solutionRouter.route('/:studyId/:groupId')
 .get((req, res, next) => {
-    // Benennen der Session als Versuchsperson - in SolutionsAll wird jeder Lösung eine Session-Id zugeordnet
-    req.session.user = 'VP';
-
     // Senden der Tasks, die zur jeweiligen Studie gehören
     Study.findById(req.params.studyId)
     .then((study) => {
@@ -74,7 +66,7 @@ solutionRouter.route('/:studyId/:groupId')
                 // Im Fall einer neuen Lösung
                 if (!solution) {
                     // Nützlichkeitswert: Funktion "usefulValue" siehe unten !! Reihenfolge wegen asynchroner Programmierung!!
-                    usefulValue(req, (useful) => {
+                    usefulValue(req, next, (useful) => {
                         if (!useful) {
                             err = new Error('Value "useful" could not be calculated for solution ' + req.body.solution);
                             err.status = 404;
@@ -100,10 +92,10 @@ solutionRouter.route('/:studyId/:groupId')
                                 //Erzeugen eines Eintrages in SolutionAll
                                 let createSolutionAll = function(){
                                     return new Promise(function(resolve, reject){
-                                        console.log(req.session.id)
+                                        console.log('sessionID ' + req.session.id)
                                         SolutionAll.create({
                                         solution: solution._id,
-                                        VP_Id: req.session.id,
+                                        VP_id: req.session.id,
                                         study: req.params.studyId,
                                         task: solution.task,
                                         group: req.params.groupId
@@ -131,9 +123,10 @@ solutionRouter.route('/:studyId/:groupId')
                 else { 
                     // Im Falle einer bereits existierenden Lösung:
                     // Erzeugen eines Eintrages in SolutionAll
+                    console.log('sessionid ' + req.session.id)
                     SolutionAll.create({
                     solution: solution._id,
-                    VP_Id: req.session.id,
+                    VP_id: req.session.id,
                     study: req.params.studyId,
                     task: solution.task,
                     group: req.params.groupId

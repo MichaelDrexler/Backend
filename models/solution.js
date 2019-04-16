@@ -35,7 +35,7 @@ var SolutionAllSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Solution'
     },
-    VP_Id: {
+    VP_id: {
         type: String
     },
     task: {
