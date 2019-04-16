@@ -5,22 +5,13 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session');
 var FileStore = require('session-file-store')(session);
-//var passport = require('passport');
-//var authenticate = require('./authenticate')
-var nodemailer = require('nodemailer');
-var flash = require('connect-flash');
-var fs = require('fs');
-//var config = require('./configuration');
-
-const passport = require("passport");//
-
-const userRouter = require("./routes/userRouter");//
+var passport = require("passport");
 
 var indexRouter = require('./routes/index');
-//var userRouter = require('./routes/userRouter');
-var solutionRouter = require('./routes/solutionRouter');
+var userRouter = require("./routes/userRouter");
 var studyRouter = require('./routes/studyRouter');
-
+var solutionRouter = require('./routes/solutionRouter');
+// über diese Route können vorhandene Tasks in Datenbank eingepflegt werden
 var insertTaskRouter = require('./routes/insertTaskRouter');
 
 //Connection zu Datenbank und ODM mongoose
@@ -58,6 +49,7 @@ app.use('/', indexRouter);
 app.use('/study', studyRouter);
 app.use('/insertTasks', insertTaskRouter);
 
+// Anlegen einer Session für Zuordnung einer Lösung zu einer Versuchsperson
 app.set('trust proxy', 1) // trust first proxy
 app.use(session({
   secret: 'visitacion31',
@@ -66,8 +58,6 @@ app.use(session({
   cookie: { secure: true }
 }))
 app.use('/solution', solutionRouter);
-//app.use('/study', studyRouter);
-
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -75,7 +75,6 @@ function usefulValue(req, next, callback){
             req.body.solution.toString().split(',').forEach(function(item, index, array) {
             item.split(' ').forEach(function(item, index, array) {
                                 item = parseInt(item, 10);
-                                console.log(item);
                                 sol.push(item);
                             });
             });
@@ -152,7 +151,6 @@ module.exports = usefulValue;
         })
 
         console.log('count ' + count)
-        
         // Berechnen der Summe aus hinterlegter Aufgabe und Lösung
         parseInt(task.max, 10);
         useful = count/task.max;

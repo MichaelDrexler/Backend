@@ -1,10 +1,9 @@
 var express = require('express');
 var bodyParser = require('body-parser');
-var User = require('../models/user');
-var Task = require('../models/task');
-var passport = require('passport');
 var shuffle = require('knuth-shuffle').knuthShuffle;
 
+var User = require('../models/user');
+var Task = require('../models/task');
 var Study = require('../models/study').Study; 
 var SolutionAll = require('../models/solution').SolutionAll;
 
@@ -12,20 +11,18 @@ var studyRouter = express.Router();
 
 studyRouter.use(bodyParser.json());
 
-// User Page with Studies
+//
+// Ausgabe der Studien (ohne Lösungen und Tasks) und zugehörigen Teilnehmenern
 studyRouter.route('/:userId')
 .get(/*passport.authenticate('jwt', { session: false }), */(req, res, next) => {
   var studies_view = [];
 
     Study.find({user: req.params.userId})
-    .populate('solutions')/*{
-      path: ,			
-      populate: { path: 'solution',
-                  model: 'SolutionAll'
-                }})*/
+    .populate('solutions')
     .then(studies => {
        console.log(studies);
 
+    // Berechnung der Teilnehmerzahl gesamt
     for(i=0;i<studies.length;i++){
       var study_view = new Object;
       var participants = [];
@@ -38,16 +35,15 @@ studyRouter.route('/:userId')
           participants.push(studies[i].solutions[j].VP_Id)
         }
       }  
-      
+      // Schreiben der Ergebnisse in ein Objekt
       participants_count = participants.length;
-
       study_view.study = studies[i];
       study_view.participants = participants;
-      study_view.participants_count = participants_count
-
-      studies_view.push(study_view)
+      study_view.participants_count = participants_count;
+      studies_view.push(study_view);
       }
-    }, err => next(err)).then(()=>{
+    }, err => next(err))
+    .then(()=>{
        // Senden der gesamten Lösungen
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -57,8 +53,7 @@ studyRouter.route('/:userId')
 })
 
 //
-// Configuration and Creation of a Study
-//
+// Anlegen einer Studie
 .post(/*passport.authenticate('jwt', { session: false }),*/ (req, res, next) => {
   // Auswählen zufälliger Tasks in jeweils gewünschter Anzahl - siehe untern
   fetchRandomTasks(req.body.Tetris_count, req.body.Neue_Wörter_count, (tasks) => {
@@ -123,61 +118,75 @@ studyRouter.route('/:userId')
   })
 })
 
-// Access of solutions of a certain Study
+//
+// Ausgabe einer bestimmten Studie
 studyRouter.route('/:userId/:studyId')
 .get(/*passport.authenticate('jwt', { session: false }),*/(req, res, next) => {
   var study_view = new Object;
+  Study.findById(req.params.studyId)
+  .populate({
+    path: 'solutions',			
+    populate: { path: 'solution',
+                model: 'Solution'
+              }})
+  .populate({
+    path: 'solutions',
+    populate: {
+                path: 'task',
+                model: 'Task'
+              }})
+  .populate('tasks')
+  .then(study => {
+    SolutionAll.find({study: req.params.studyId})
+    .populate('solution')
+    .then(solutions => {
+      // Ordnen der Lösungen nach Gruppen
+      for(i=0;i<study.groups.length;i++){
+        mean_neu = 0;
+        mean_useful = 0;
+        groupSolutions = [];
+        for(j=0;j<solutions.length;j++){
+          if (solutions[j].group.equals(study.groups[i]._id)){
+            groupSolutions.push(solutions[j])
+            mean_neu = mean_neu + solutions[j].solution.neu; 
+            mean_useful = mean_useful + solutions[j].solution.useful; 
+          }
+          else {
+            continue
+          }
+        }
 
-        Study.findById(req.params.studyId)
-        .populate({
-          path: 'solutions',			
-          populate: { path: 'solution',
-                      model: 'Solution'
-                    }})
-        .populate({
-          path: 'solutions',
-          populate: {
-                      path: 'task',
-                      model: 'Task'
-                    }})
-        .populate('tasks')
-        .then(study => {
-          // mean neu useful groupwise
-            var participants = [];
-            var participants_count = 0;
-            var neu_mean = 0;
-            var useful_mean = 0;
-            for (i=0;i<study.solutions.length;i++) {
-              neu_mean = neu_mean + study.solutions[i].solution.neu;
-              useful_mean = useful_mean + study.solutions[i].solution.useful;
+        study.groups[i].mean_neu = (Math.round((mean_neu/groupSolutions.length)*100000))/100000;
+        study.groups[i].mean_useful = (Math.round((mean_useful/groupSolutions.length)*100))/100;
+        study.groups[i].mean_creative = (study.groups[i].mean_neu + study.groups[i].mean_useful)/2;
+        
+        // Teilnehmerzahl gruppenweise
+        participants = [];
+        for(j=0;j<groupSolutions.length;j++){
+          console.log(groupSolutions[j])
+          if (participants.includes(groupSolutions[j].VP_id)){
+            continue
+          }
+          else { 
+            participants.push(groupSolutions[j].VP_id)
+          }
+        }
 
-              if (participants.includes(study.solutions[i].VP_Id)){
-                continue
-              }
-              else {
-                participants.push(study.solutions[i].VP_Id)
-              }
-            }  
-            
-            participants_count = participants.length;
-
-            study_view.study = study;
-            study_view.neu_mean = neu_mean/study.solutions.length;
-            study_view.useful_mean = useful_mean/study.solutions.length;
-            study_view.creative_mean = (neu_mean/study.solutions.length+useful_mean/study.solutions.length)/2;
-            study_view.participants = participants;
-            study_view.participants_count = participants_count;        
-      }, err => next(err))
-      .then (() => {
-        // Senden der gesamten Lösungen
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json(study_view)      
-      }, err => next(err))
-    .catch(err => next(err));
+        study.groups[i].participants_count = participants.length;
+    }
+    }, err => next(err))     
+    .then (() => {
+      // Senden der gesamten Lösungen
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'application/json');
+      res.json(study)      
+    }, err => next(err))
+  }, err => next(err))
+  .catch(err => next(err));
 })
 
-//Alteration of a certain Study Name
+//
+// Ändern einer Studie
 .put(/*passport.authenticate('jwt', { session: false }),*/(req, res, next) => {
   // Check, if study obtained already one solution
   SolutionAll.findOne({study: req.params.studyId})
@@ -192,39 +201,72 @@ studyRouter.route('/:userId/:studyId')
       var old_study_name = req.body.study_name;
       Study.findById(req.params.studyId)
       .then(study => {
-        // Auswählen zufälliger Tasks in jeweils gewünschter Anzahl - siehe untern
         fetchRandomTasks(req.body.Tetris_count, req.body.Neue_Wörter_count, (tasks) => {
-        // Zuweisen der neuen Werte
-        study.study_name = req.body.study_name,
-        study.description = req.body.description,
-        study.study_link = [],
-        study.groups = [],
-        study.tasks = tasks,
-        study.user = req.params.userId
-      
-        // Befüllen der Arrays "groups" und "study_link"
-        req.body.groups.forEach(function(item){
-          study.groups.push(item);
-        });
-        req.body.groups.forEach(function(item){
-          study.study_link.push('www.creativity.lfe.mw.tum/' + study._id + '/' + item.group_name/*Group id*/);
-        });
-
-        // Speicher der Änderungen
-        study.save()
+          // Kettung der einzelnen Bausteine der Studie
+          // Befüllen des Array groups
+          let fillUpGroups = function(study){
+            return new Promise(function(resolve, reject){
+              study.groups = [];
+              study.save();
+              groups = [];
+              req.body.groups.forEach(function(item){
+                groups.push(item);
+              });
+              resolve(groups);
+            })
+          }
         
-        // Ausgabe der geänderten Studie
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json('Study "' + old_study_name + '" changed to: ' + study);
-        })
-      }, err => next(err))
+          // Studie erstellen und speichern
+          let putStudy = function(study, groups){
+            return new Promise(function(resolve, reject){
+                study.study_name = req.body.study_name;
+                study.description = req.body.description;
+                study.study_link = [];
+                study.groups = groups;
+                study.tasks = tasks;
+                study.solutions = [];
+                study.user = req.params.userId;
+                resolve(study);
+                study.save();
+              }, err => next(err));
+          };
+      
+          // Befüllen des Arrays study_link mit den zuvor angelegten group._id s 
+          let fillUpLink = function(study){
+            return new Promise(function(resolve, reject){
+              study.groups.forEach(function(item){
+                study.study_link.push('www.creativity.lfe.mw.tum/' + study._id + '/' + item._id);
+              console.log(item)
+              });
+              resolve(study);
+            })
+          }
+      
+          // Reihenfolge festlegen, study._id in User schreiben und Studie ausgeben
+          fillUpGroups(study).then(resolve => {
+            return putStudy(study, resolve).then(resolve => {
+              return fillUpLink(resolve).then(resolve => {
+                resolve.save();
+                User.findById(req.params.userId)
+                  .then((user) => {
+                    user.studies.push(resolve._id);
+                    user.save();
+                  }, (err) => next(err))
+                res.statusCode = 200;
+                res.setHeader('Content-Type', 'application/json');
+                res.json(resolve);
+              }, err => next(err));
+            }, err => next(err));
+          }, err => next(err));
+        });
+      }, err => next(err));
     }
-  }, (err) => next(err))
-  .catch((err) => next(err));
+  }, err => next(err))
+  .catch(err => next(err));     
 })
 
-// Deletion of a certain Study
+//
+// Löschen einer Studie
 .delete(/*passport.authenticate('jwt', { session: false }),*/(req, res, next) => {
   Study.findByIdAndDelete(req.params.studyId)
   .then((study) => {
@@ -235,7 +277,8 @@ studyRouter.route('/:userId/:studyId')
   .catch((err) => next(err));
 });
 
-// Schließen einer Studie
+//
+// Schließen einer Studie - open auf "false" setzen
 studyRouter.route('/:userId/:studyId/close')
 .put(/*passport.authenticate('jwt', { session: false }),*/(req, res, next) => {
   Study.findById(req.params.studyId)
@@ -258,7 +301,7 @@ studyRouter.route('/:userId/:studyId/close')
   
 })
 
-
+//
 // Definition Funktion, die die gewünschte Anzahl an zufälligen Tasks der Typen Tetris und Neue_Wörter aus DB filtert
 function fetchRandomTasks(Tetris_count, NeueWörter_count, callback){
   parseInt(Tetris_count, 10);

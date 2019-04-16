@@ -5,6 +5,21 @@ var Solution = require('./solution').Solution;
 var GroupSchema = new Schema ({ 
     group_name: {
         type: String
+    },
+    solutions: {
+        type: Array
+    },
+    participants_count: {
+        type: Number
+    },
+    mean_neu: {
+        type: Number
+    },
+    mean_useful: {
+        type: Number
+    },
+    mean_creative: {
+        type: Number
     }
 });
 
