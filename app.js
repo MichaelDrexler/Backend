@@ -50,13 +50,14 @@ app.use('/study', studyRouter);
 app.use('/insertTasks', insertTaskRouter);
 
 // Anlegen einer Session für Zuordnung einer Lösung zu einer Versuchsperson
-app.set('trust proxy', 1) // trust first proxy
 app.use(session({
+  name: 'VP',
   secret: 'visitacion31',
+  //cookie:{expires: new Date(Date.now()+1*3600*1000)},
   resave: false,
   saveUninitialized: true,
-  cookie: { secure: true }
-}))
+  store: new FileStore()
+}));
 app.use('/solution', solutionRouter);
 
 // catch 404 and forward to error handler

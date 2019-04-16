@@ -123,7 +123,6 @@ solutionRouter.route('/:studyId/:groupId')
                 else { 
                     // Im Falle einer bereits existierenden Lösung:
                     // Erzeugen eines Eintrages in SolutionAll
-                    console.log('sessionid ' + req.session.id)
                     SolutionAll.create({
                     solution: solution._id,
                     VP_id: req.session.id,
