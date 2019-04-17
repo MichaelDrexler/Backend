@@ -18,13 +18,17 @@ studyRouter.route('/:userId')
   var studies_view = [];
 
     Study.find({user: req.params.userId})
-    .populate('solutions')
+    .populate({
+      path: 'solutions',			
+      populate: { path: 'solution',
+                  model: 'Solution'
+                }})
     .then(studies => {
-       console.log(studies);
-
     // Berechnung der Teilnehmerzahl gesamt
     for(i=0;i<studies.length;i++){
       var study_view = new Object;
+      var neu_mean = 0;
+      var useful_mean = 0;
       var participants = [];
       var participants_count = 0;
       for (j=0;j<studies[i].solutions.length;j++) {
@@ -34,10 +38,17 @@ studyRouter.route('/:userId')
         else {
           participants.push(studies[i].solutions[j].VP_Id)
         }
+        
+        neu_mean = neu_mean + studies[i].solutions[j].solution.neu;
+        useful_mean = useful_mean + studies[i].solutions[j].solution.useful;
       }  
-      // Schreiben der Ergebnisse in ein Objekt
       participants_count = participants.length;
+      
+      // Schreiben der Ergebnisse in ein Objekt
       study_view.study = studies[i];
+      study_view.neu_mean = (Math.round((neu_mean/studies[i].solutions.length)*100000))/100000;
+      study_view.useful_mean = (Math.round((useful_mean/studies[i].solutions.length)*100))/100;
+      study_view.mean_creative = (Math.round((study_view.neu_mean + study_view.useful_mean)/2)*100000)/100000;
       study_view.participants = participants;
       study_view.participants_count = participants_count;
       studies_view.push(study_view);
@@ -158,7 +169,7 @@ studyRouter.route('/:userId/:studyId')
 
         study.groups[i].mean_neu = (Math.round((mean_neu/groupSolutions.length)*100000))/100000;
         study.groups[i].mean_useful = (Math.round((mean_useful/groupSolutions.length)*100))/100;
-        study.groups[i].mean_creative = (study.groups[i].mean_neu + study.groups[i].mean_useful)/2;
+        study.groups[i].mean_creative = (Math.round((study.groups[i].mean_neu + study.groups[i].mean_useful)/2)*100000)/100000;
         
         // Teilnehmerzahl gruppenweise
         participants = [];

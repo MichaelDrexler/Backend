@@ -84,7 +84,6 @@ solutionRouter.route('/:studyId/:groupId')
                             })
                             // Rückmeldung über den Erfolg der Aktion
                             .then((solution) => {
-                                console.log('New Solution "' + solution.solution + '" saved');
                                 res.statusCode = 200;
                                 res.setHeader('Content-Type', 'application/json');
                                 res.json(solution);
@@ -92,7 +91,6 @@ solutionRouter.route('/:studyId/:groupId')
                                 //Erzeugen eines Eintrages in SolutionAll
                                 let createSolutionAll = function(){
                                     return new Promise(function(resolve, reject){
-                                        console.log('sessionID ' + req.session.id)
                                         SolutionAll.create({
                                         solution: solution._id,
                                         VP_id: req.sessionID,
@@ -113,7 +111,6 @@ solutionRouter.route('/:studyId/:groupId')
                                 //Aktualisieren des Neuheitswertes der anderen Lösungen zu diesem Task
                                 //Reihenfolge beachten!! Eintragen in Solutions und SolutionsAll muss vor updateNeu beendet sein
                                 createSolutionAll().then(()=>{
-                                    console.log('hello')
                                     updateNeu(solution, req.body)
                                 })
                             }, err => next(err))
@@ -147,7 +144,6 @@ solutionRouter.route('/:studyId/:groupId')
                                 err.status = 404;
                                 return next(err);}
                             else {
-                                console.log('Solution "' + solution.solution + '" saved');
                                 res.statusCode = 200;
                                 res.setHeader('Content-Type', 'application/json');
                                 res.json(solution);
@@ -167,9 +163,6 @@ let updateNeu = function(solution, body){
     // Zählen aller Einträge zu aktuellem Task in SolutionsAll
     SolutionAll.countDocuments({task: body.task})
     .then((N_max) => {
-        console.log('N_max - neuLösung: '+ N_max);
-        //console.log('id  ' +solution._id);
-
         // Ausgeben aller Einträgezu aktuellem Task und Aktualisieren des Neuheitswertes
         Solution.find({$and:[{'task': body.task}/*, {'_id':{$ne: solution._id}}*/]})
         .then((solutions) => {
@@ -178,8 +171,7 @@ let updateNeu = function(solution, body){
                     // Berechnung des neuen Neuartigkeitswert
                     item.neu = 1 - item.counter/N_max;
                     // Runden auf fünf Nachkommastellen
-                    item.neu = Math.round(item.neu*100000);
-                    item.neu = item.neu/100000;
+                    item.neu = Math.round((item.neu*100000))/100000;
                     // Speichern des neuen Wertes
                     item.save();
                 })
@@ -199,9 +191,6 @@ function actualizeSolutions(solution, body, callback, next) {
     // Zählen aller jemals eingegangenen Lösungen zur aktuellen Aufgabe
     SolutionAll.countDocuments({task: solution.task})
     .then((N_max) => {
-        console.log('N_max: '+N_max)
-        console.log('id '+solution.solution)
-
         //Aktualisierung des Neuheitswertes dieser Lösung, Berechnung linear
         Solution.findById(solution.solution /*ref in SolutionsALl*/)
         .then(solution => {
@@ -209,8 +198,7 @@ function actualizeSolutions(solution, body, callback, next) {
             solution.counter = solution.counter + 1;
             solution.neu = 1 - (solution.counter/N_max);
             // Runden auf fünf Nachkommastellen
-            solution.neu = Math.round(solution.neu*10000);
-            solution.neu = solution.neu/100000;
+            solution.neu = (Math.round(solution.neu*100000))/100000;
             // Speichern
             solution.save()
             .then(solution => {
