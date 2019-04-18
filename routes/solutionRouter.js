@@ -194,7 +194,6 @@ function actualizeSolutions(solution, body, callback, next) {
         //Aktualisierung des Neuheitswertes dieser Lösung, Berechnung linear
         Solution.findById(solution.solution /*ref in SolutionsALl*/)
         .then(solution => {
-            console.log(solution)
             solution.counter = solution.counter + 1;
             solution.neu = 1 - (solution.counter/N_max);
             // Runden auf fünf Nachkommastellen
@@ -212,7 +211,7 @@ function actualizeSolutions(solution, body, callback, next) {
                     // Berechnung des neuen Neuartigkeitswertes
                     item.neu = 1 - item.counter/N_max;
                     // Runden auf fünf Nachkommastellen
-                    item.neu = Math.round(item.neu*10000);
+                    item.neu = Math.round(item.neu*100000);
                     item.neu = item.neu/100000;
                     item.save();
                 })

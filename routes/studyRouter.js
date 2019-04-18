@@ -6,6 +6,7 @@ var User = require('../models/user');
 var Task = require('../models/task');
 var Study = require('../models/study').Study; 
 var SolutionAll = require('../models/solution').SolutionAll;
+var Solution = require('../models/solution').Solution;
 
 var studyRouter = express.Router();
 
@@ -16,7 +17,6 @@ studyRouter.use(bodyParser.json());
 studyRouter.route('/:userId')
 .get(/*passport.authenticate('jwt', { session: false }), */(req, res, next) => {
   var studies_view = [];
-
     Study.find({user: req.params.userId})
     .populate({
       path: 'solutions',			
@@ -24,41 +24,73 @@ studyRouter.route('/:userId')
                   model: 'Solution'
                 }})
     .then(studies => {
-    // Berechnung der Teilnehmerzahl gesamt
-    for(i=0;i<studies.length;i++){
-      var study_view = new Object;
-      var neu_mean = 0;
-      var useful_mean = 0;
-      var participants = [];
-      var participants_count = 0;
-      for (j=0;j<studies[i].solutions.length;j++) {
-        if (participants.includes(studies[i].solutions[j].VP_Id)){
-          continue
-        }
-        else {
-          participants.push(studies[i].solutions[j].VP_Id)
+      
+      for(i=0;i<studies.length;i++){
+        let loop1 = function(){
+          return new Promise(function(resolve){
+            var study_view = new Object;
+            var neu_mean = 0;
+            var useful_mean = 0;
+            var participants = [];
+            var participants_count = 0;
+            var different_solutions = [];
+      
+            let loop2 = function(){
+              return new Promise(function(resolve){
+                for (j=0;j<studies[i].solutions.length;j++) {
+                  if (participants.includes(studies[i].solutions[j].VP_id)){
+                    continue
+                  }
+                  else {
+                    participants.push((studies[i].solutions[j].VP_id))
+                  }
+                }
+                studies[i].solutions.forEach(function(item, index){
+                  if (different_solutions.includes(item.solution._id)){
+                    return
+                  }
+                  else {
+                    different_solutions.push(item.solution._id);
+                  }
+                  
+                })
+                resolve();
+              })
+            }
+
+            loop2().then(() => {
+              Solution.find({'_id': {$in: different_solutions}})
+              .then(solutions => {
+                for(j=0;j<solutions.length;j++){
+                  neu_mean = neu_mean + solutions[j].neu;
+                  useful_mean = useful_mean + solutions[j].useful
+                }
+      
+                neu_mean = neu_mean/solutions.length;
+                useful_mean = useful_mean/solutions.length;
+                creative_mean = (neu_mean + useful_mean)/2;
+                participants_count = participants.length;
+                
+                // Schreiben der Ergebnisse in ein Objekt
+                study_view.study = studies[i];
+                study_view.neu_mean = (Math.round(neu_mean*100000))/100000;
+                study_view.useful_mean = (Math.round(useful_mean*100))/100;
+                study_view.creative_mean = (Math.round(creative_mean*100000))/100000;
+                study_view.participants = participants;
+                study_view.participants_count = participants_count;
+                resolve(studies_view.push(study_view));
+              })
+            }, err => next(err));
+          })
         }
         
-        neu_mean = neu_mean + studies[i].solutions[j].solution.neu;
-        useful_mean = useful_mean + studies[i].solutions[j].solution.useful;
-      }  
-      participants_count = participants.length;
-      
-      // Schreiben der Ergebnisse in ein Objekt
-      study_view.study = studies[i];
-      study_view.neu_mean = (Math.round((neu_mean/studies[i].solutions.length)*100000))/100000;
-      study_view.useful_mean = (Math.round((useful_mean/studies[i].solutions.length)*100))/100;
-      study_view.mean_creative = (Math.round((study_view.neu_mean + study_view.useful_mean)/2)*100000)/100000;
-      study_view.participants = participants;
-      study_view.participants_count = participants_count;
-      studies_view.push(study_view);
+      loop1().then(()=>{
+        // Senden der gesamten Lösungen
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.json(studies_view);
+        }, err => next(err))
       }
-    }, err => next(err))
-    .then(()=>{
-       // Senden der gesamten Lösungen
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.json(studies_view);
     }, err => next(err))
     .catch(err => next(err));
 })

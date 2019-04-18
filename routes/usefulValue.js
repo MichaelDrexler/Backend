@@ -1,6 +1,4 @@
 var Task = require('../models/task');
-
-
 //
 // Berechnung des Nützlichkeitswertes
 //
@@ -13,7 +11,7 @@ function usefulValue(req, next, callback){
         if (!task) {err = new Error('Task identification failed in usefulValue')}
         // Berechnung des Nützlichkeitswertes bei Aufgabe "Neue Wörter"
         else if (task.task_type == "Neue_Wörter") {
-            console.log('solution " ' + req.body.solution + ' " was given');
+            //console.log('solution " ' + req.body.solution + ' " was given');
             var sol = [];
             //var wort = [];
             var length = [];
@@ -22,7 +20,7 @@ function usefulValue(req, next, callback){
             for(i=0;i<req.body.solution.length;i++){
                 // Abfrage, ob Lösungswort gleich einem vorgegebenen Wort
                 if (task.task.includes(req.body.solution[i])) {
-                    console.log(req.body.solution + 'is not valid, equals given word')
+                    //console.log(req.body.solution + 'is not valid, equals given word')
                 }
                 else {
                     var re = new RegExp('^' + req.body.solution[i] + '$');
@@ -30,7 +28,7 @@ function usefulValue(req, next, callback){
                     var Word = words.filter(word => word.match(re));
                     //wort.push(Word);
                     if (Word == '') {  
-                        console.log('Word "' + req.body.solution[i] + '" is not valid');
+                        //console.log('Word "' + req.body.solution[i] + '" is not valid');
                     }
                     else  {
                         sol.push(req.body.solution[i]);
@@ -39,14 +37,9 @@ function usefulValue(req, next, callback){
                     }
                 }
             };
-            console.log('sol: ' + sol);
-            //console.log('max: ' + req.body.max);
-            //console.log('wort: ' + wort);
-            console.log('länge: ' + länge);
             // Berechung des Nützlichkeitswertes
             // linear
             parseInt(task.max, 10);
-            console.log(task.max)
             useful = länge/task.max;
 
             // Runden auf zwei Stellen nach dem Komma
@@ -91,10 +84,8 @@ function usefulValue(req, next, callback){
                 }
             });
             // Beziehung: belegete innere Felder/ maximal mögliche Felder
-            console.log(count + ' valid fields');
             parseInt(task.max, 10);
             useful = count/task.max;
-            console.log(task.max)
             //Rückgabewert
         
             useful = Math.round(useful*100);
