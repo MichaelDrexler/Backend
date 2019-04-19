@@ -12,13 +12,13 @@ var GroupSchema = new Schema ({
     participants_count: {
         type: Number
     },
-    mean_neu: {
+    neu_mean: {
         type: Number
     },
-    mean_useful: {
+    useful_mean: {
         type: Number
     },
-    mean_creative: {
+    creative_mean: {
         type: Number
     }
 });
