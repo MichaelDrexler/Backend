@@ -49,6 +49,9 @@ var SolutionAllSchema = new Schema({
     group: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Group'
+    },
+    group_name: {
+        type: String
     }
 },
     {

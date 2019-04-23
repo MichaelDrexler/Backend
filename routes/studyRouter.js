@@ -166,7 +166,6 @@ studyRouter.route('/:userId/:studyId')
               }})
   .populate('tasks')
   .then(study => {
-    
     let loop = function(){
       return new Promise(function(resolve){
         for (i=0;i<study.groups.length;i++){
@@ -178,6 +177,7 @@ studyRouter.route('/:userId/:studyId')
 
           for(j=0;j<study.solutions.length;j++){
               if (study.solutions[j].group.equals(study.groups[i]._id)){
+                study.solutions[j].group_name = study.groups[i].group_name;
                 groupSolutions.push(study.solutions[j]);
               }
               else{
