@@ -1,7 +1,7 @@
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
-var cookieParser = require('cookie-parser');
+//var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var session = require('express-session');
 var FileStore = require('session-file-store')(session);
@@ -34,7 +34,19 @@ app.set('view engine', 'jade');
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
+
+//app.use(cookieParser());
+
+// Anlegen einer Session für Zuordnung einer Lösung zu einer Versuchsperson
+app.use(session({
+  name: 'VP',
+  secret: 'visitacion31',
+  //cookie:{expires: new Date(Date.now()+1*3600*1000)},
+  resave: false,
+  saveUninitialized: true,
+  store: new FileStore()
+}));
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Passport middleware
@@ -48,16 +60,6 @@ app.use("/users", userRouter);
 app.use('/', indexRouter);
 app.use('/study', studyRouter);
 app.use('/insertTasks', insertTaskRouter);
-
-// Anlegen einer Session für Zuordnung einer Lösung zu einer Versuchsperson
-app.use(session({
-  name: 'VP',
-  secret: 'visitacion31',
-  //cookie:{expires: new Date(Date.now()+1*3600*1000)},
-  resave: false,
-  saveUninitialized: true,
-  store: new FileStore()
-}));
 app.use('/solution', solutionRouter);
 
 // catch 404 and forward to error handler

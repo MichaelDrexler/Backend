@@ -18,6 +18,7 @@ solutionRouter.use(bodyParser.json());
 
 solutionRouter.route('/:studyId/:groupId')
 .get((req, res, next) => {
+    //res.cookie({ maxAge: 900000, httpOnly: true })
     // Senden der Tasks, die zur jeweiligen Studie gehören
     Study.findById(req.params.studyId)
     .then((study) => {
@@ -49,110 +50,103 @@ solutionRouter.route('/:studyId/:groupId')
     //Welcher Aufagabentyp ? 
     Task.findById(req.body.task)
     .then(task => {
-        if(!task) {
-            err = new Error('Task ' + req.body.task + ' not found');
-            err.status = 404;
-            return next(err);
-            }
-        else {
-            // Im Fall von "Neue_Wörter" alphabetisches Ordnen in einen Array der Lösungswörter
-            if (task.task_type == "Neue_Wörter"){
-                req.body.solution = req.body.solution.split(', ');
-                req.body.solution.sort();
-            }
-            // Abgleich mit Datenbank Solutions
-            Solution.findOne({$and: [{solution: req.body.solution},{task: req.body.task}]}) 
-            .then((solution) => {
-                // Im Fall einer neuen Lösung
-                if (!solution) {
-                    // Nützlichkeitswert: Funktion "usefulValue" siehe unten !! Reihenfolge wegen asynchroner Programmierung!!
-                    usefulValue(req, next, (useful) => {
-                        if (!useful) {
-                            err = new Error('Value "useful" could not be calculated for solution ' + req.body.solution);
-                            err.status = 404;
-                            return next(err);
-                        }
-                        else {
-                            // Erzeugen eines Eintrages in Solution
-                            Solution.create({
-                            solution: req.body.solution,
-                            unused: req.body.unused,
-                            neu: 1,  
-                            useful: useful,
-                            counter: 1,
-                            task: req.body.task
-                            })
-                            // Rückmeldung über den Erfolg der Aktion
-                            .then((solution) => {
-                                res.statusCode = 200;
-                                res.setHeader('Content-Type', 'application/json');
-                                res.json(solution);
-
-                                //Erzeugen eines Eintrages in SolutionAll
-                                let createSolutionAll = function(){
-                                    return new Promise(function(resolve, reject){
-                                        SolutionAll.create({
-                                        solution: solution._id,
-                                        VP_id: req.sessionID,
-                                        study: req.params.studyId,
-                                        task: solution.task,
-                                        group: req.params.groupId
-                                        }).then((solution)=> {
-                                            resolve();
-                                            Study.findById(req.params.studyId)
-                                            .then(study => {
-                                                study.solutions.push(solution._id);
-                                                study.save();
-                                            }, err => next(err)) 
-                                        }, err => next(err))
-                                        .catch(err => next(err));
-                                    }) 
-                                }
-                                //Aktualisieren des Neuheitswertes der anderen Lösungen zu diesem Task
-                                //Reihenfolge beachten!! Eintragen in Solutions und SolutionsAll muss vor updateNeu beendet sein
-                                createSolutionAll().then(()=>{
-                                    updateNeu(solution, req.body)
-                                })
-                            }, err => next(err))
-                        }
-                    })
-                }    
-                else { 
-                    // Im Falle einer bereits existierenden Lösung:
-                    // Erzeugen eines Eintrages in SolutionAll
-                    SolutionAll.create({
-                    solution: solution._id,
-                    VP_id: req.sessionID,
-                    study: req.params.studyId,
-                    task: solution.task,
-                    group: req.params.groupId
-                    })
-                    .then((solution) => {
-                        // Referenz in Study anlegen
-                        Study.findById(req.params.studyId)
-                        .then(study => {
-                                study.solutions.push(solution._id);
-                                study.save();
-                        }, err => next(err)) 
-                
-                        // Aktualisieren der Werte "neu" und "counter" in Solutions und damit auch in SolutionsAll
-                        // Funktion "actualizeSolution" siehe unten
-                        actualizeSolutions(solution, req.body, (solution) => {
-                            //Rückmeldung über den Erfolg der Aktion
-                            if (!solution) {
-                                err = new Error('solution ' + req.body.solution + ' could not be actualized');
-                                err.status = 404;
-                                return next(err);}
-                            else {
-                                res.statusCode = 200;
-                                res.setHeader('Content-Type', 'application/json');
-                                res.json(solution);
-                            }
-                        },err => next(err));
-                    }, err => next(err));
-                }   
-            }, err => next(err))
+        // Im Fall von "Neue_Wörter" alphabetisches Ordnen in einen Array der Lösungswörter
+        if (task.task_type == "Neue_Wörter"){
+            req.body.solution = req.body.solution.split(', ');
+            req.body.solution.sort();
         }
+        // Abgleich mit Datenbank Solutions
+        Solution.findOne({$and: [{solution: req.body.solution},{task: req.body.task}]}) 
+        .then((solution) => {
+            // Im Fall einer neuen Lösung
+            if (!solution) {
+                // Nützlichkeitswert: Funktion "usefulValue" siehe unten !! Reihenfolge wegen asynchroner Programmierung!!
+                usefulValue(req, next, (useful) => {
+                    if (!useful) {
+                        err = new Error('Value "useful" could not be calculated for solution ' + req.body.solution);
+                        err.status = 404;
+                        return next(err);
+                    }
+                    else {
+                        // Erzeugen eines Eintrages in Solution
+                        Solution.create({
+                        solution: req.body.solution,
+                        unused: req.body.unused,
+                        neu: 1,  
+                        useful: useful,
+                        counter: 1,
+                        task: req.body.task
+                        })
+                        .then((solution) => {
+                            //Erzeugen eines Eintrages in SolutionAll
+                            let createSolutionAll = function(){
+                                return new Promise(function(resolve, reject){
+                                    SolutionAll.create({
+                                    solution: solution._id,
+                                    VP_id: req.sessionID,
+                                    study: req.params.studyId,
+                                    task: solution.task,
+                                    group: req.params.groupId
+                                    }).then((solution)=> {
+                                        Study.findById(req.params.studyId)
+                                        .then(study => {
+                                            study.solutions.push(solution._id)
+                                            study.save();
+                                            resolve()
+                                        }, err => next(err)) 
+                                    }, err => next(err))
+                                }) 
+                            }
+                            //Aktualisieren des Neuheitswertes der anderen Lösungen zu diesem Task
+                            //Reihenfolge beachten!! Eintragen in Solutions und SolutionsAll muss vor updateNeu beendet sein
+                            createSolutionAll().then(()=>{
+                                updateNeu(solution, req.body)
+                            }).then(() => {
+                                // Rückmeldung
+                                console.log('hello')
+                                res.statusCode = 200;
+                                res.setHeader('Content-Type', 'application/json');
+                                res.json(solution);
+                            }, err => next(err));
+                        }, err => next(err))
+                    }
+                })
+            }    
+            else { 
+                // Im Falle einer bereits existierenden Lösung:
+                // Erzeugen eines Eintrages in SolutionAll
+                SolutionAll.create({
+                solution: solution._id,
+                VP_id: req.sessionID,
+                study: req.params.studyId,
+                task: solution.task,
+                group: req.params.groupId
+                })
+                .then((solution) => {
+                    // Referenz in Study anlegen
+                    Study.findById(req.params.studyId)
+                    .then(study => {
+                            study.solutions.push(solution._id);
+                            study.save();
+                    }, err => next(err)) 
+            
+                    // Aktualisieren der Werte "neu" und "counter" in Solutions und damit auch in SolutionsAll
+                    // Funktion "actualizeSolution" siehe unten
+                    actualizeSolutions(solution, req.body, (solution) => {
+                        //Rückmeldung über den Erfolg der Aktion
+                        if (!solution) {
+                            err = new Error('solution ' + req.body.solution + ' could not be actualized');
+                            err.status = 404;
+                            return next(err);}
+                        else {
+                            res.statusCode = 200;
+                            res.setHeader('Content-Type', 'application/json');
+                            res.json(solution);
+                        }
+                    },err => next(err));
+                }, err => next(err)); 
+            } 
+        }, err => next(err))
     }).catch((err) => next(err));
 });
 
