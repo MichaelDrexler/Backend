@@ -1,6 +1,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var shuffle = require('knuth-shuffle').knuthShuffle;
+var passport = require('passport');
 
 var User = require('../models/user');
 var Task = require('../models/task');
@@ -15,7 +16,7 @@ studyRouter.use(bodyParser.json());
 //
 // Ausgabe der Studien (ohne Lösungen und Tasks) und zugehörigen Teilnehmenern
 studyRouter.route('/:userId')
-.get(/*passport.authenticate('jwt', { session: false }), */(req, res, next) => {
+.get(/*passport.authenticate('jwt', { session: false }),*/ (req, res, next) => {
     Study.find({user: req.params.userId})
     .populate({
       path: 'solutions',			
@@ -122,7 +123,6 @@ studyRouter.route('/:userId')
       return new Promise(function(resolve, reject){
         study.groups.forEach(function(item){
           study.study_link.push('www.creativity.lfe.mw.tum/' + study._id + '/' + item._id);
-        console.log(item)
         });
         resolve(study);
       })
@@ -136,7 +136,10 @@ studyRouter.route('/:userId')
           User.findById(req.params.userId)
             .then((user) => {
               user.studies.push(resolve._id);
-              user.save();
+              user.save()
+              .then(user => {
+                console.log(user)
+              });
             }, (err) => next(err))
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');
@@ -281,7 +284,7 @@ studyRouter.route('/:userId/:studyId')
             return new Promise(function(resolve, reject){
               study.groups.forEach(function(item){
                 study.study_link.push('www.creativity.lfe.mw.tum/' + study._id + '/' + item._id);
-              console.log(item)
+              //console.log(item)
               });
               resolve(study);
             })
@@ -313,12 +316,34 @@ studyRouter.route('/:userId/:studyId')
 //
 // Löschen einer Studie
 .delete(/*passport.authenticate('jwt', { session: false }),*/(req, res, next) => {
+  User.findById(req.params.userId)
+  .then(user => {
+    for(i=0;i<user.studies.length;i++){
+      if(user.studies[i]._id == req.params.studyId){
+        user.studies.splice(i, 1);
+        user.save();
+      } 
+      else{
+        continue;
+      } 
+    }
+  }, err => next(err));
+
+  SolutionAll.find({study: req.params.studyId})
+  .then(solutions => {
+    for(i=0;i<solutions.length;i++){
+      solutions[i].study = undefined;
+      solutions[i].group = undefined;
+      solutions[i].save();
+    }
+  }, err => next(err));
+
   Study.findByIdAndDelete(req.params.studyId)
   .then((study) => {
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
-    res.send({success: true, status: 'Study ' + study.study_name + ' deleted!'});
-  }, err => next(err))
+    res.send({success: true, status: 'Study deleted!'});
+  }, err => next(err))  
   .catch((err) => next(err));
 });
 
@@ -355,7 +380,7 @@ function fetchRandomTasks(Tetris_count, NeueWörter_count, callback){
   
   // Array mit zufällig ausgewählten Tetris Tasks
   let randomiseTetris = function(Tetris_count){
-    console.log(Tetris_count)
+    //console.log(Tetris_count)
     return new Promise (function(resolve, reject){
       //Finden aller ids von Tetris Tasks
       Task.find({task_type: 'Tetris'}, { '_id': 1 })
@@ -372,7 +397,7 @@ function fetchRandomTasks(Tetris_count, NeueWörter_count, callback){
 
   // Array mit zufällig ausgewählten Neue Wörter Tasts
   let randomiseNeueWörter = function(NeueWörter_count){
-    console.log(NeueWörter_count)
+    //console.log(NeueWörter_count)
     return new Promise (function(resolve, reject){
       Task.find({task_type: 'Neue_Wörter'}, { '_id': 1 })
       .then(ids => {

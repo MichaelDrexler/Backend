@@ -8,7 +8,11 @@ function usefulValue(req, next, callback){
     //Bestimmung der zugehörigen Aufgabe
     Task.findById(req.body.task)
     .then(task => {
-        if (!task) {err = new Error('Task identification failed in usefulValue')}
+        if (!task) {
+            err = new Error('Task identification failed in usefulValue');
+            err.status = 404;
+            return next(err);
+        }
         // Berechnung des Nützlichkeitswertes bei Aufgabe "Neue Wörter"
         else if (task.task_type == "Neue_Wörter") {
             //console.log('solution " ' + req.body.solution + ' " was given');
