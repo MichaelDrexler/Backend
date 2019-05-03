@@ -62,9 +62,9 @@ studyRouter.route('/:userId')
                   
             // Schreiben der Ergebnisse in ein Objekt
             study_view.study = studies[i];
-            study_view.neu_mean = (Math.round(neu_mean*100000))/100000;
+            study_view.neu_mean = (Math.round(neu_mean*100))/100;
             study_view.useful_mean = (Math.round(useful_mean*100))/100;
-            study_view.creative_mean = (Math.round(creative_mean*100000))/100000;
+            study_view.creative_mean = (Math.round(creative_mean*100))/100;
             study_view.participants = participants;
             study_view.participants_count = participants_count;
             studies_view.push(study_view);
@@ -137,9 +137,6 @@ studyRouter.route('/:userId')
             .then((user) => {
               user.studies.push(resolve._id);
               user.save()
-              .then(user => {
-                console.log(user)
-              });
             }, (err) => next(err))
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');
@@ -212,9 +209,9 @@ studyRouter.route('/:userId/:studyId')
           neu_mean = neu_mean/different_solutions.length;
           useful_mean = useful_mean/different_solutions.length;
           creative_mean = (neu_mean + useful_mean)/2;   
-          study.groups[i].neu_mean = (Math.round(neu_mean*100000))/100000;
+          study.groups[i].neu_mean = (Math.round(neu_mean*100))/100;
           study.groups[i].useful_mean = (Math.round(useful_mean*100))/100;
-          study.groups[i].creative_mean = (Math.round(creative_mean*100000))/100000;
+          study.groups[i].creative_mean = (Math.round(creative_mean*100))/100;
           study.groups[i].participants_count = participants.length;
     
         }
