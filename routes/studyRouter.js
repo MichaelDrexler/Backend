@@ -212,7 +212,7 @@ studyRouter.route('/:userId/:studyId')
           study.groups[i].neu_mean = (Math.round(neu_mean*100))/100;
           study.groups[i].useful_mean = (Math.round(useful_mean*100))/100;
           study.groups[i].creative_mean = (Math.round(creative_mean*100))/100;
-          study.groups[i].participants_count = participants.length;
+          study.groups[i].participants_count = participants.length; 
     
         }
         resolve();
@@ -366,6 +366,47 @@ studyRouter.route('/:userId/:studyId/close')
   }, err => next(err))
   .catch(err => next(err));
   
+})
+
+
+//Ausgabe der Lösungen für das Herunterladen als csv_Datei
+studyRouter.route('/:userId/:studyId/download')
+.get(/*passport.authenticate('jwt', { session: false }),*/(req, res, next) => {
+  SolutionAll.find({'study':  req.params.studyId })
+  .populate('solution')  
+  .populate('study')  
+  .then(solutions => {
+    console.log(solutions)
+    var csv_arr = [];
+    for (i=0;i<solutions.length;i++){
+        for (j=0;j<solutions[i].study.groups.length;j++){
+          if (solutions[i].group.equals(solutions[i].study.groups[j]._id)){
+            var group_name = solutions[i].study.groups[j].group_name;
+          }
+          else {
+            continue
+          }
+        }
+      
+        var csv = new Object({
+          solution: solutions[i].solution.solution,
+          unused: solutions[i].solution.unused,
+          task: solutions[i].solution.task,
+          group: group_name,
+          neu: solutions[i].solution.neu,
+          useful: solutions[i].solution.useful,
+          study: solutions[i].study.study_name,
+          participant: solutions[i].VP_id
+        });
+        csv_arr.push(csv)
+    }
+
+    res.statusCode = 200;
+    res.setHeader('Content-Type', 'application/json');
+    res.json(csv_arr) 
+
+  }, err => next(err))
+  .catch(err => next(err));
 })
 
 //
