@@ -19,8 +19,9 @@ insertTaskRouter.route('/')
 .post((req, res, next) => {
 
         Task.create(
-            {task_type:"Neue_Wörter",config:"1",max:"30",task:["pen", "pencil", "penncylvania", "penthouse"]},
-            {task_type:"Neue_Wörter",config:"2",max:"25",task:["threshold", "handle", "warmth", "snow"]},
+            {task_type:"Neue_Wörter_test",config:"1",max:"30",task:["pen", "pencil", "penncylvania", "penthouse"]},
+            {task_type:"Neue_Wörter_test",config:"2",max:"24",task:["trs", "lik", "jsftd", "lkasteripodtz"]},
+            /*{task_type:"Neue_Wörter",config:"2",max:"25",task:["threshold", "handle", "warmth", "snow"]},
             {task_type:"Neue_Wörter",config:"3",max:"24",task:["desk", "computer", "lamp", "scissors"]},
             {task_type:"Neue_Wörter",config:"4",max:"15",task:["sky", "earth", "sun", "star"]},
             {task_type:"Neue_Wörter",config:"5",max:"28",task:["thought", "illuminate", "combine", "idea"]},
@@ -41,7 +42,8 @@ insertTaskRouter.route('/')
             {task_type:"Tetris",config:"10",max:"32",task:["0 0 0 0 0 0 0 0 0 0","0 0 0 0 0 1 0 0 0 0","0 0 0 1 1 1 1 1 0 0","0 0 0 1 1 1 1 1 0 0","0 0 0 1 1 1 1 1 0 0","0 0 0 1 1 1 1 1 0 0","0 0 0 1 1 1 0 0 0 0","0 0 1 1 1 1 1 0 0 0","0 0 1 1 1 1 0 0 0 0","0 0 0 0 0 0 0 0 0 0"]},
             {task_type:"Tetris",config:"11",max:"44",task:["0 0 0 0 0 0 0 0 0 0","0 1 1 1 0 1 1 1 0 0","0 1 1 1 1 1 1 1 0 0","0 1 1 1 1 1 0 0 0 0","0 1 1 1 1 1 0 0 0 0","0 0 1 1 1 1 0 0 0 0","0 1 1 1 1 1 0 0 1 0","0 1 0 0 1 1 1 0 1 0","0 0 0 1 1 1 1 1 1 0","0 0 0 0 0 0 0 0 0 0"]},
             {task_type:"Tetris",config:"12",max:"44",task:["0 0 0 0 0 0 0 0 0 0","0 0 1 1 0 1 1 1 0 0","0 1 1 1 1 1 1 1 1 0","0 1 1 0 0 0 1 1 0 0","0 0 1 0 0 1 1 1 1 0","0 1 1 1 0 0 0 1 1 0","0 1 1 0 0 0 1 1 1 0","0 1 1 1 1 1 1 1 1 0","0 1 0 1 1 1 0 0 0 0","0 0 0 0 0 0 0 0 0 0"]}
-                    ).then((es) => console.log('Ok'))
+            */        
+            ).then((es) => console.log('Ok'))
                     
     }
 );

@@ -352,7 +352,7 @@ studyRouter.route('/:userId/:studyId/close')
   .then(study => {
     if (study.open == true){
       study.open = false;
-      // study.open = req,body.open
+      // study.open = req.body.open
       study.save();
       res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');

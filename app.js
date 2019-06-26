@@ -14,6 +14,10 @@ var solutionRouter = require('./routes/solutionRouter');
 // über diese Route können vorhandene Tasks in Datenbank eingepflegt werden
 var insertTaskRouter = require('./routes/insertTaskRouter');
 
+var Post_QuestionnaireRouter = require('./routes/Post_QuestionnaireRouter');
+var APMRouter = require('./routes/APMRouter');
+var ICAARouter = require('./routes/ICAARouter');
+
 //Connection zu Datenbank und ODM mongoose
 const mongoose = require('mongoose');
 const url = 'mongodb://localhost:27017/kreativDB';
@@ -61,6 +65,10 @@ app.use('/', indexRouter);
 app.use('/study', studyRouter);
 app.use('/insertTasks', insertTaskRouter);
 app.use('/solution', solutionRouter);
+
+app.use('/Post_Questionnaire', Post_QuestionnaireRouter);
+app.use('/APM', APMRouter);
+app.use('/ICAA', ICAARouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
