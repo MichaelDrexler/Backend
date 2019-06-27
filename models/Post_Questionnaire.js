@@ -4,6 +4,10 @@ var Schema = mongoose.Schema;
 //var VPSchema = require('./study').VPSchema;
 
 var Post_QuestionnaireSchema = new Schema({
+    VP_id: {
+      type: String,
+      required: true
+    },
     age: {
       type: String,
       required: true
@@ -61,6 +65,14 @@ var Post_QuestionnaireSchema = new Schema({
       required: true
     },
     subsequent_questionnaire: {
+      type: String,
+      required: true
+    },
+    competition: {
+      type: String,
+      required: true
+    },
+    feedback: {
       type: String,
       required: true
     }

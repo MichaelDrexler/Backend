@@ -14,6 +14,7 @@ Post_QuestionnaireRouter.route('/')
 })
 .post((req, res, next) => {
     Post_Questionnaire.create({
+        VP_id: req.sessionID,
         age: req.body.age,
         gender: req.body.gender,
         education_grade: req.body.education_grade,
@@ -31,7 +32,9 @@ Post_QuestionnaireRouter.route('/')
         },
         email: req.body.email,
         code: req.body.code,
-        subsequent_questionnaire: req.body.subsequent_questionnaire
+        subsequent_questionnaire: req.body.subsequent_questionnaire,
+        competition: req.body.competition,
+        feedback: req.body.feedback
     })
     .then(object => {
         res.statusCode = 200;

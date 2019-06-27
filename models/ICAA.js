@@ -4,6 +4,10 @@ var Schema = mongoose.Schema;
 //var VPSchema = require('./study').VPSchema;
 
 var ICAASchema = new Schema({
+    VP_id: {
+        type: String,
+        required: true
+      },
     literature: {
         short: {
             type: String,
@@ -82,8 +86,28 @@ var ICAASchema = new Schema({
             required: true
         }
     },
-    coocking: {
+    cooking: {
         own_dish:{
+            type: String,
+            required: true
+        },
+        presentation: {
+            type: String,
+            required: true
+        },
+        cake_decoration: {
+            type: String,
+            required: true
+        },
+        food_skulpture: {
+            type: String,
+            required: true
+        },
+        recipe: {
+            type: String,
+            required: true
+        },
+        drink: {
             type: String,
             required: true
         }

@@ -14,6 +14,7 @@ ICAARouter.route('/')
 })
 .post((req, res, next) => {
     ICAA.create({
+        VP_id: req.sessionID,
         literature: {
             short: req.body.literature.short,
             long: req.body.literature.long,
@@ -38,8 +39,13 @@ ICAARouter.route('/')
             planed_garden: req.body.crafts.planed_garden,
             created_cloths: req.body.crafts.created_cloths,
         },
-        coocking: {
+        cooking: {
             own_dish: req.body.coocking.own_dish,
+            presentation:  req.body.cooking.presentation,
+            cake_decoration:  req.body.cooking.cake_decoration,
+            food_skulpture:  req.body.cooking.food_skulptur,
+            recipe:  req.body.cooking.recipe,
+            drink: req.body.cooking.drink
         },
         sports: {
             special_skills: req.body.sports.special_skills,

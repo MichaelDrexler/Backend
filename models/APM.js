@@ -4,6 +4,10 @@ var Schema = mongoose.Schema;
 //var VPSchema = require('./study').VPSchema;
 
 var APM = new Schema({
+    VP_id: {
+      type: String,
+      required: true
+    },
     APM_7: {
         type: String,
         required: true

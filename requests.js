@@ -45,8 +45,13 @@
         "planed_garden": "5",
         "created_cloths": "6"
     },
-    "coocking": {
-        "own_dish": "1"
+    "cooking": {
+        "own_dish": "1",
+        "presentation": "2",
+        "cake_decoration": "3",
+        "food_skulpture": "4",
+        "recipe": "5",
+        "drink": "6"
     },
     "sports": {
         "special_skills": "1",
@@ -97,4 +102,4 @@
         "ubongo": "gut",
         "scrabble": "solala"   
     },
-"email": "VP@createst.tum", "code": "BR0818", "subsequent_questionnaire": "1"}
+"email": "VP@createst.tum", "code": "BR0818", "subsequent_questionnaire": "1", "competition": "1", "feedback": "1"}

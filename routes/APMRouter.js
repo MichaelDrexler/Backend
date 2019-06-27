@@ -14,6 +14,7 @@ APMRouter.route('/')
 })
 .post((req, res, next) => {
     APM.create({
+        VP_id: req.sessionID,
         APM_7: req.body.APM_7,
         APM_8: req.body.APM_8,
         APM_9: req.body.APM_9,
