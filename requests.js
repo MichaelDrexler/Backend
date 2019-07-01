@@ -1,5 +1,5 @@
 // request neue Wörter
-{"solution": "leather, shwam, thonro", "unused": "w, s, d, d, n, h, l" , "task": "5ca62ddd8eea8228587ff21a"}
+{"solution": "leather,shwam,thonro", "unused": "w, s, d, d, n, h, l" , "task": "5d148dcca7168711e4501556"}
 
 // request Tetris
 // mit Buchstaben
@@ -102,4 +102,9 @@
         "ubongo": "gut",
         "scrabble": "solala"   
     },
+    "creative_achievements": {
+        "text1": "abc",
+        "text2": "abc",
+        "text3": "abc"
+  },
 "email": "VP@createst.tum", "code": "BR0818", "subsequent_questionnaire": "1", "competition": "1", "feedback": "1"}

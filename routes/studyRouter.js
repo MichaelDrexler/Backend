@@ -8,6 +8,9 @@ var Task = require('../models/task');
 var Study = require('../models/study').Study; 
 var SolutionAll = require('../models/solution').SolutionAll;
 var Solution = require('../models/solution').Solution;
+var Post_Questionnaire = require('../models/Post_Questionnaire');
+var APM = require('../models/APM');
+var ICAA = require('../models/ICAA');
 
 var studyRouter = express.Router();
 
@@ -369,42 +372,128 @@ studyRouter.route('/:userId/:studyId/close')
 })
 
 
-//Ausgabe der Lösungen für das Herunterladen als csv_Datei
+// Ausgabe der Lösungen für das Herunterladen als csv_Datei
 studyRouter.route('/:userId/:studyId/download')
 .get(/*passport.authenticate('jwt', { session: false }),*/(req, res, next) => {
-  SolutionAll.find({'study':  req.params.studyId })
-  .populate('solution')  
-  .populate('study')  
-  .then(solutions => {
-    console.log(solutions)
-    var csv_arr = [];
-    for (i=0;i<solutions.length;i++){
-        for (j=0;j<solutions[i].study.groups.length;j++){
-          if (solutions[i].group.equals(solutions[i].study.groups[j]._id)){
-            var group_name = solutions[i].study.groups[j].group_name;
-          }
-          else {
-            continue
-          }
+
+  var participants = [];
+  var csv_arr = [];
+  var csv_sol = [];
+  var questionnaires = [];
+  // Auslesen aller benötigten Daten zu einer Studie
+  //
+  // Alle Lösungen zu einer Studie
+  let solutions = function(){
+    return new Promise(function(resolve){
+      SolutionAll.find({'study':  req.params.studyId })
+      .populate('solution')  
+      .populate('study')  
+      .then(solutions => {
+        for (i=0;i<solutions.length;i++){
+            for (j=0;j<solutions[i].study.groups.length;j++){
+              if (solutions[i].group.equals(solutions[i].study.groups[j]._id)){
+                var group_name = solutions[i].study.groups[j].group_name;
+              }
+              else {
+                continue
+              }
+            }
+
+            solution = new Object({
+              solution: solutions[i].solution.solution.join(' '),
+              unused: solutions[i].solution.unused,
+              task: solutions[i].solution.task,
+              group: group_name,
+              neu: solutions[i].solution.neu,
+              useful: solutions[i].solution.useful,
+              study: solutions[i].study.study_name,
+              participant: solutions[i].VP_id
+            });
+
+            csv_sol.push(solution);
         }
-      
-        var csv = new Object({
-          solution: solutions[i].solution.solution,
-          unused: solutions[i].solution.unused,
-          task: solutions[i].solution.task,
-          group: group_name,
-          neu: solutions[i].solution.neu,
-          useful: solutions[i].solution.useful,
-          study: solutions[i].study.study_name,
-          participant: solutions[i].VP_id
-        });
-        csv_arr.push(csv)
-    }
+        resolve(csv_sol);
+      }, err => next(err));
+    })
+  };
 
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/json');
-    res.json(csv_arr) 
+  // Daten zu Versuchspersonen
+  let post_questionnaire = function(){
+    return new Promise(function(resolve){
+      Post_Questionnaire.find({'study':  req.params.studyId })
+      .then(questionnaires => {
+        resolve(questionnaires);
+      })
+    })
+  };
 
+  // Daten zum APM
+  let apm = function(){
+    return new Promise(function(resolve){
+      APM.find({'study':  req.params.studyId })
+      .then(apm => {
+        resolve(apm);
+      })
+    })
+  };
+
+  // Daten zu ICAA
+  let icaa = function(){
+      return new Promise(function(resolve){
+        ICAA.find({'study':  req.params.studyId })
+        .then(icaa => {
+          resolve(icaa);
+        })
+      })
+    };
+
+  solutions().then(resolve => {
+    csv_sol = resolve;
+    return post_questionnaire().then(resolve => {
+      questionnaires = resolve;
+       return apm().then(resolve => {
+         apm = resolve;
+          return icaa().then(resolve => {
+            icaa = resolve;
+  
+          for(i=0;i<questionnaires.length;i++){
+            if (participants.includes(questionnaires[i].VP_id)){
+              continue;
+              }
+            else {
+              participants.push(questionnaires[i].VP_id);
+
+              var apm_aktuell = apm.find(function(element) {
+                return element.VP_id == questionnaires[i].VP_id;
+              });
+
+              var icaa_aktuell = icaa.find(function(element) {
+                return element.VP_id == questionnaires[i].VP_id;
+              });
+
+              var solutions_aktuell = csv_sol.filter(element =>
+                element.participant == questionnaires[i].VP_id
+                )
+
+              var csv = new Object({
+                participant: questionnaires[i].VP_id,
+                Post_Questionnaire: questionnaires[i],
+                APM: apm_aktuell,
+                ICAA : icaa_aktuell,
+                createst: solutions_aktuell
+                });
+
+              csv_arr.push(csv)
+            }     
+          }
+
+          //console.log(participants)
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.json(csv_arr) 
+        }, err => next(err));
+      }, err => next(err))
+    }, err => next(err))
   }, err => next(err))
   .catch(err => next(err));
 })

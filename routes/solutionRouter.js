@@ -81,7 +81,6 @@ solutionRouter.route('/:studyId/:groupId')
                             updateNeu(solution, req.body)
                         }).then(() => {
                             // Rückmeldung
-                            console.log('hello')
                             res.statusCode = 200;
                             res.setHeader('Content-Type', 'application/json');
                             res.json(solution);

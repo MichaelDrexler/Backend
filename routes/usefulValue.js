@@ -4,7 +4,7 @@ var Task = require('../models/task');
 //
 // Definition usefulValue
 //Definition callback
-function usefulValue(req, next, callback){   
+function usefulValue(req, next, callback){
     //Bestimmung der zugehörigen Aufgabe
     Task.findById(req.body.task)
     .then(task => {
@@ -17,6 +17,7 @@ function usefulValue(req, next, callback){
         else if (task.task_type == "Neue_Wörter") {
             //console.log('solution " ' + req.body.solution + ' " was given');
             var sol = [];
+            var invalid = [];
             //var wort = [];
             var length = [];
             var länge = 0;
@@ -32,6 +33,7 @@ function usefulValue(req, next, callback){
                     var Word = words.filter(word => word.match(re));
                     //wort.push(Word);
                     if (Word == '') {  
+                        invalid.push(req.body.solution[i]);
                         //console.log('Word "' + req.body.solution[i] + '" is not valid');
                     }
                     else  {
@@ -41,6 +43,10 @@ function usefulValue(req, next, callback){
                     }
                 }
             };
+
+            console.log("invalid " + invalid);
+            console.log("valid " + sol)
+
             // Berechung des Nützlichkeitswertes
             // linear
             parseInt(task.max, 10);
@@ -59,7 +65,7 @@ function usefulValue(req, next, callback){
         // Im Fall von Tetris
         else if (task.task_type == "Tetris") {
             // Hilfsvariablen
-            var base = []; // für hinterlegte Augafgabe
+            var base = []; // für hinterlegte Augfgabe
             var sol = []; // für Lösung
             // Wandeln der hinterlegten Aufgabe von String in Zahlen
             task.task.toString().split(',').forEach(function(item, index, array) {

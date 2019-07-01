@@ -4,6 +4,10 @@ var Schema = mongoose.Schema;
 //var VPSchema = require('./study').VPSchema;
 
 var Post_QuestionnaireSchema = new Schema({
+  study:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Study'
+    },
     VP_id: {
       type: String,
       required: true
@@ -56,6 +60,20 @@ var Post_QuestionnaireSchema = new Schema({
             required: true
           }
     },
+    creative_achievements: {
+          text1: {
+            type: String, 
+            required: true
+          },
+          text2: {
+            type: String,
+            required: true
+          },
+          text3: {
+            type: String,
+            required: true
+          }
+  },
     email: {
       type: String,
       default: "noEmail"

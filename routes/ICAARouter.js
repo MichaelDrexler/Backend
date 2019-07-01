@@ -8,12 +8,13 @@ var ICAARouter = express.Router();
 ICAARouter.use(bodyParser.json());
 
 
-ICAARouter.route('/')
+ICAARouter.route('/:studyId')
 .get((req, res, next) => {
 
 })
 .post((req, res, next) => {
     ICAA.create({
+        study: req.params.studyId,
         VP_id: req.sessionID,
         literature: {
             short: req.body.literature.short,
@@ -40,10 +41,10 @@ ICAARouter.route('/')
             created_cloths: req.body.crafts.created_cloths,
         },
         cooking: {
-            own_dish: req.body.coocking.own_dish,
+            own_dish: req.body.cooking.own_dish,
             presentation:  req.body.cooking.presentation,
             cake_decoration:  req.body.cooking.cake_decoration,
-            food_skulpture:  req.body.cooking.food_skulptur,
+            food_sculpture:  req.body.cooking.food_sculpture,
             recipe:  req.body.cooking.recipe,
             drink: req.body.cooking.drink
         },
@@ -60,7 +61,7 @@ ICAARouter.route('/')
             logo: req.body.fine_arts.logo,
             building: req.body.fine_arts.building,
             painting: req.body.fine_arts.painting,
-            skulpture: req.body.fine_arts.skulpture,
+            sculpture: req.body.fine_arts.sculpture,
             skatch_interior: req.body.fine_arts.skatch_interior,
         },
         performing_arts: {

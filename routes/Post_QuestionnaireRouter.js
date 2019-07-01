@@ -8,12 +8,13 @@ var Post_QuestionnaireRouter = express.Router();
 Post_QuestionnaireRouter.use(bodyParser.json());
 
 
-Post_QuestionnaireRouter.route('/')
+Post_QuestionnaireRouter.route('/:studyId')
 .get((req, res, next) => {
 
 })
 .post((req, res, next) => {
     Post_Questionnaire.create({
+        study: req.params.studyId,
         VP_id: req.sessionID,
         age: req.body.age,
         gender: req.body.gender,
@@ -29,6 +30,11 @@ Post_QuestionnaireRouter.route('/')
             tetris: req.body.games.tetris,
             ubongo: req.body.games.ubongo,
             scrabble: req.body.games.scrabble
+        },
+        creative_achievements: {
+            text1: req.body.creative_achievements.text1,
+            text2: req.body.creative_achievements.text2,
+            text3: req.body.creative_achievements.text3,
         },
         email: req.body.email,
         code: req.body.code,

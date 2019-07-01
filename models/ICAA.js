@@ -4,6 +4,10 @@ var Schema = mongoose.Schema;
 //var VPSchema = require('./study').VPSchema;
 
 var ICAASchema = new Schema({
+    study:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Study'
+    },
     VP_id: {
         type: String,
         required: true
@@ -99,7 +103,7 @@ var ICAASchema = new Schema({
             type: String,
             required: true
         },
-        food_skulpture: {
+        food_sculpture: {
             type: String,
             required: true
         },
@@ -155,7 +159,7 @@ var ICAASchema = new Schema({
             type: String,
             required: true
         },
-        skulpture: {
+        sculpture: {
             type: String,
             required: true
         },
