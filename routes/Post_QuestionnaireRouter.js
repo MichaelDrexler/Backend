@@ -8,13 +8,12 @@ var Post_QuestionnaireRouter = express.Router();
 Post_QuestionnaireRouter.use(bodyParser.json());
 
 
-Post_QuestionnaireRouter.route('/:studyId')
+Post_QuestionnaireRouter.route('/')
 .get((req, res, next) => {
 
 })
 .post((req, res, next) => {
     Post_Questionnaire.create({
-        study: req.params.studyId,
         VP_id: req.sessionID,
         age: req.body.age,
         gender: req.body.gender,

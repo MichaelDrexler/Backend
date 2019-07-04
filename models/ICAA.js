@@ -4,10 +4,6 @@ var Schema = mongoose.Schema;
 //var VPSchema = require('./study').VPSchema;
 
 var ICAASchema = new Schema({
-    study:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Study'
-    },
     VP_id: {
         type: String,
         required: true

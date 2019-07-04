@@ -372,7 +372,7 @@ studyRouter.route('/:userId/:studyId/close')
 })
 
 
-// Ausgabe der Lösungen für das Herunterladen als csv_Datei
+// Ausgabe der Lösungen für das Herunterladen als csv_Daten
 studyRouter.route('/:userId/:studyId/download')
 .get(/*passport.authenticate('jwt', { session: false }),*/(req, res, next) => {
 
@@ -420,7 +420,7 @@ studyRouter.route('/:userId/:studyId/download')
   // Daten zu Versuchspersonen
   let post_questionnaire = function(){
     return new Promise(function(resolve){
-      Post_Questionnaire.find({'study':  req.params.studyId })
+      Post_Questionnaire.find()
       .then(questionnaires => {
         resolve(questionnaires);
       })
@@ -430,7 +430,7 @@ studyRouter.route('/:userId/:studyId/download')
   // Daten zum APM
   let apm = function(){
     return new Promise(function(resolve){
-      APM.find({'study':  req.params.studyId })
+      APM.find()
       .then(apm => {
         resolve(apm);
       })
@@ -440,7 +440,7 @@ studyRouter.route('/:userId/:studyId/download')
   // Daten zu ICAA
   let icaa = function(){
       return new Promise(function(resolve){
-        ICAA.find({'study':  req.params.studyId })
+        ICAA.find()
         .then(icaa => {
           resolve(icaa);
         })

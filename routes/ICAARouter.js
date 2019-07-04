@@ -8,13 +8,12 @@ var ICAARouter = express.Router();
 ICAARouter.use(bodyParser.json());
 
 
-ICAARouter.route('/:studyId')
+ICAARouter.route('/')
 .get((req, res, next) => {
 
 })
 .post((req, res, next) => {
     ICAA.create({
-        study: req.params.studyId,
         VP_id: req.sessionID,
         literature: {
             short: req.body.literature.short,

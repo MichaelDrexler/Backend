@@ -8,13 +8,12 @@ var APMRouter = express.Router();
 APMRouter.use(bodyParser.json());
 
 
-APMRouter.route('/:studyId')
+APMRouter.route('/')
 .get((req, res, next) => {
 
 })
 .post((req, res, next) => {
     APM.create({
-        study: req.params.studyId,
         VP_id: req.sessionID,
         APM_7: req.body.APM_7,
         APM_8: req.body.APM_8,
