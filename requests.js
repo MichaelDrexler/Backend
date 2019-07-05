@@ -3,10 +3,19 @@
 
 // request Tetris
 // mit Buchstaben
-{"solution": ["0 0 0 0 0 0 0 0 0 0","0 0 0 0 0 0 0 0 0 0","0 0 0 0 2a 2a 2a 2a 0 0","0 0 0 0 2a 2a 2a 2a 0 0","0 0 0 0 2c 2c 2b 2b 0 0","0 0 0 0 2c 2b 2b 0 0 0","0 0 0 0 2c 1 1 0 0 0","0 0 2d 2d 1 1 1 0 0 0","0 0 2d 2d 2a 2a 2a 1a0 0","0 0 0 0 0 0 0 0 0 0"], "task": "5ca62ddd8eea8228587ff224"}
-
-// ohne Buchstaben
-{"solution": ["0 0 0 0 0 0 0 0 0 0","0 0 0 0 1 1 1 1 0 0","0 0 0 0 1 1 1 1 0 0","0 0 0 0 2 2 0 0 0 0","0 0 0 0 2 2 0 0 0 0","0 0 0 0 2 2 0 0 0 0","0 0 0 0 2 2 0 0 0 0","0 0 1 1 1 1 0 0 0 0","0 0 0 0 1 1 1 1 0","0 0 0 0 0 0 0 0 0 0"], "task": "5ca62ddd8eea8228587ff224"}
+{
+    "solution": [ "0 0 0 0 0 0 0 0 0 0",
+               "0 0 0 0 0 I 0 0 0 0",
+               "0 0 0 0 0 I 0 0 0 0",
+               "0 0 0 1 1 I J J 0 0",
+               "0 0 0 1 1 I J 0 0 0",
+               "0 0 0 0 1 1 J 1 0 0",
+               "0 0 O O 1 1 0 0 0 0",
+               "0 0 O O 1 1 0 0 0 0",
+               "0 0 0 0 1 0 0 0 0 0",
+               "0 0 0 0 0 0 0 0 0 0"],
+    "task": "5d148dcca7168711e4501563"
+}
 
 // Erstellen oder Ändern einer Studie
 {"study_name": "global", "description": "very good", "groups": [{"group_name": "group_1"}, {"group_name": "reference"}], "Tetris_count": "10", "Neue_Wörter_count": "10"}
