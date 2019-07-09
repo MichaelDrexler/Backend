@@ -68,32 +68,30 @@ function usefulValue(req, next, callback){
             var score = 0;
             var aufgabe = task.task.join().replace(/,/g, ' ').split(' ');
             var lösung = req.body.solution.join().replace(/,/g, ' ').split(' ');
-            console.log(aufgabe.length)
             
             for (i=0;i<aufgabe.length;i++) {
                 if (aufgabe[i] == '0' && lösung[i] != '0') {
                     score = score -1;
-                    console.log('1')
                 }
 
                 else if (aufgabe[i] == '0' && lösung[i] == '0') {
                     score = score;
-                    console.log('2')
                 }
 
                 else if (aufgabe[i] == '1' && lösung[i] != '1') {
                     score = score + 1;
-                    console.log('3')
                 }
 
                 else if (aufgabe[i] == '1' && lösung[i] == '1') {
                     score = score;
-                    console.log('4')
                 }
             }
-            console.log(score)
+            console.log(score);
 
             useful = score/task.max;
+            if (useful < 0) {
+                useful = 0;
+            }
             useful = Math.round(useful*100);
             useful = useful/100;
             

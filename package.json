@@ -21,6 +21,7 @@
     "http-errors": "~1.6.2",
     "is-empty": "^1.2.0",
     "jade": "~1.11.0",
+    "json2csv": "^4.5.2",
     "jsonwebtoken": "^8.3.0",
     "knuth-shuffle": "^1.0.8",
     "local": "^0.3.3",
