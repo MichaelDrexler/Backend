@@ -380,6 +380,7 @@ studyRouter.route('/:userId/:studyId/download')
   var csv_arr = [];
   var csv_sol = [];
   var questionnaires = [];
+  var studyName = '';
   // Auslesen aller benötigten Daten zu einer Studie
   //
   // Alle Lösungen zu einer Studie
@@ -399,6 +400,9 @@ studyRouter.route('/:userId/:studyId/download')
               }
             }
 
+            // Hilfsvariable für solutions_blank
+            studyName =  solutions[0].study.study_name;
+
             solution = new Object({
               solution: solutions[i].solution.solution.join(' '),
               unused: solutions[i].solution.unused,
@@ -410,6 +414,7 @@ studyRouter.route('/:userId/:studyId/download')
               participant: solutions[i].VP_id
             });
 
+            csv_sol.push(solution);
         }
         resolve(csv_sol);
       }, err => next(err));
@@ -446,9 +451,9 @@ studyRouter.route('/:userId/:studyId/download')
       })
     };
 
+  // Ausführung nacheinander (damit alle Daten zum Zusammenbau bereitliegen)
   solutions().then(resolve => {
     csv_sol = resolve;
-    console.log(csv_sol)
     return post_questionnaire().then(resolve => {
       questionnaires = resolve;
        return apm().then(resolve => {
@@ -456,8 +461,11 @@ studyRouter.route('/:userId/:studyId/download')
           return icaa().then(resolve => {
             icaa = resolve;
   
+          // ein Post_Questionnaire pro Teilnehmer
+          // Iteration über alle Teinehmer einer Studie
           for(i=0;i<questionnaires.length;i++){
 
+            // Zuordnung der zugehörigen Daten
             if (participants.includes(questionnaires[i].VP_id)){
               continue;
               }
@@ -468,23 +476,41 @@ studyRouter.route('/:userId/:studyId/download')
                 return element.VP_id == questionnaires[i].VP_id;
               });
 
+              // Abfangen unausgefüllter APM Bögen
+                if(apm_aktuell == undefined) {
+                  apm_aktuell = [];
+                }
+               
               var icaa_aktuell = icaa.find(function(element) {
                 return element.VP_id == questionnaires[i].VP_id;
               });
 
-                // if(icaa_aktuell == undefined) {
-                //     icaa_aktuell = [];
-                // }
-
-                // console.log(icaa_aktuell)
-
-                console.log(csv_sol)
+              // Abfabgen unausgefüllter ICAA Bögen
+                if(icaa_aktuell == undefined) {
+                  icaa_aktuell = [];
+                }
 
               var solutions_aktuell = csv_sol.filter(element =>
                 element.participant == questionnaires[i].VP_id
-                )
-                console.log(solutions_aktuell)
+              )
+              
+              // Handhabe nicht-gegebener Lösungen zum creattest - Auffüllen mit leeren Objecten 
+                var solution_blank = new Object ({
+                  solution: '',
+                  unused: '',
+                  task: '',
+                  group: '',
+                  neu: '',                  
+                  study: studyName,
+                  useful: '',
+                  participant: questionnaires[i].VP_id
+                })
 
+                while (solutions_aktuell.length < 8) {
+                    solutions_aktuell.push(solution_blank);
+                }
+
+              // Erstellen eines Datensatzes zu je einem Teinehmer
               var csv = new Object({
                 Participant: questionnaires[i].VP_id,
                 Age: questionnaires[i].age,
@@ -564,56 +590,56 @@ studyRouter.route('/:userId/:studyId/download')
                 createst_1_solution: solutions_aktuell[0].solution,
                 createst_1_unused: solutions_aktuell[0].unused,
                 createst_1_task: solutions_aktuell[0].task,
-                createst_1_group_name: solutions_aktuell[0].group_name,
+                createst_1_group_name: solutions_aktuell[0].group,
                 createst_1_neu: solutions_aktuell[0].neu,
                 createst_1_useful: solutions_aktuell[0].useful,
-                createst_1_study_name: solutions_aktuell[0].study_name,
-                createst_1_VP_id: solutions_aktuell[0].VP_id,
+                createst_1_study_name: solutions_aktuell[0].study,
+                createst_1_VP_id: solutions_aktuell[0].participant,
 
                 createst_2_solution: solutions_aktuell[1].solution,
                 createst_2_unused: solutions_aktuell[1].unused,
                 createst_2_task: solutions_aktuell[1].task,
-                createst_2_group_name: solutions_aktuell[1].group_name,
+                createst_2_group_name: solutions_aktuell[1].group,
                 createst_2_neu: solutions_aktuell[1].neu,
                 createst_2_useful: solutions_aktuell[1].useful,
-                createst_2_study_name: solutions_aktuell[1].study_name,
-                createst_2_VP_id: solutions_aktuell[1].VP_id,
+                createst_2_study_name: solutions_aktuell[1].study,
+                createst_2_VP_id: solutions_aktuell[1].participant,
 
                 createst_3_solution: solutions_aktuell[2].solution,
                 createst_3_unused: solutions_aktuell[2].unused,
                 createst_3_task: solutions_aktuell[2].task,
-                createst_3_group_name: solutions_aktuell[2].group_name,
+                createst_3_group_name: solutions_aktuell[2].group,
                 createst_3_neu: solutions_aktuell[2].neu,
                 createst_3_useful: solutions_aktuell[2].useful,
-                createst_3_study_name: solutions_aktuell[2].study_name,
-                createst_3_VP_id: solutions_aktuell[2].VP_id,
+                createst_3_study_name: solutions_aktuell[2].study,
+                createst_3_VP_id: solutions_aktuell[2].participant,
 
                 createst_4_solution: solutions_aktuell[3].solution,
                 createst_4_unused: solutions_aktuell[3].unused,
                 createst_4_task: solutions_aktuell[3].task,
-                createst_4_group_name: solutions_aktuell[3].group_name,
+                createst_4_group_name: solutions_aktuell[3].group,
                 createst_4_neu: solutions_aktuell[3].neu,
                 createst_4_useful: solutions_aktuell[3].useful,
-                createst_4_study_name: solutions_aktuell[3].study_name,
-                createst_4_VP_id: solutions_aktuell[3].VP_id,
+                createst_4_study_name: solutions_aktuell[3].study,
+                createst_4_VP_id: solutions_aktuell[3].participant,
 
                 createst_5_solution: solutions_aktuell[4].solution,
                 createst_5_unused: solutions_aktuell[4].unused,
                 createst_5_task: solutions_aktuell[4].task,
-                createst_5_group_name: solutions_aktuell[4].group_name,
+                createst_5_group_name: solutions_aktuell[4].group,
                 createst_5_neu: solutions_aktuell[4].neu,
                 createst_5_useful: solutions_aktuell[4].useful,
-                createst_5_study_name: solutions_aktuell[4].study_name,
-                createst_5_VP_id: solutions_aktuell[4].VP_id,
+                createst_5_study_name: solutions_aktuell[4].study,
+                createst_5_VP_id: solutions_aktuell[4].participant,
 
                 createst_6_solution: solutions_aktuell[5].solution,
                 createst_6_unused: solutions_aktuell[5].unused,
                 createst_6_task: solutions_aktuell[5].task,
-                createst_6_group_name: solutions_aktuell[5].group_name,
+                createst_6_group_name: solutions_aktuell[5].group,
                 createst_6_neu: solutions_aktuell[5].neu,
                 createst_6_useful: solutions_aktuell[5].useful,
-                createst_6_study_name: solutions_aktuell[5].study_name,
-                createst_6_VP_id: solutions_aktuell[5].VP_id,
+                createst_6_study_name: solutions_aktuell[5].study,
+                createst_6_VP_id: solutions_aktuell[5].participant,
 
                 createst_7_solution: solutions_aktuell[6].solution,
                 createst_7_unused: solutions_aktuell[6].unused,
@@ -621,25 +647,25 @@ studyRouter.route('/:userId/:studyId/download')
                 createst_7_group_name: solutions_aktuell[6].group_name,
                 createst_7_neu: solutions_aktuell[6].neu,
                 createst_7_useful: solutions_aktuell[6].useful,
-                createst_7_study_name: solutions_aktuell[6].study_name,
-                createst_7_VP_id: solutions_aktuell[6].VP_id,
+                createst_7_study_name: solutions_aktuell[6].study,
+                createst_7_VP_id: solutions_aktuell[6].participant,
 
                 createst_8_solution: solutions_aktuell[7].solution,
                 createst_8_unused: solutions_aktuell[7].unused,
                 createst_8_task: solutions_aktuell[7].task,
-                createst_8_group_name: solutions_aktuell[7].group_name,
+                createst_8_group_name: solutions_aktuell[7].group,
                 createst_8_neu: solutions_aktuell[7].neu,
                 createst_8_useful: solutions_aktuell[7].useful,
-                createst_8_study_name: solutions_aktuell[7].study_name,
-                createst_8_VP_id: solutions_aktuell[7].VP_id,
+                createst_8_study_name: solutions_aktuell[7].study,
+                createst_8_VP_id: solutions_aktuell[7].participant,
             
-                });
-
-              csv_arr.push(csv)
-            }     
-          }
-
+              });
           
+            // Erstellen des gesammten AusgabeArrays
+            csv_arr.push(csv);
+            }  
+          }
+          // Senden des json Object zur CSV Ausgabe
           res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');
           res.json(csv_arr) 
@@ -649,6 +675,32 @@ studyRouter.route('/:userId/:studyId/download')
   }, err => next(err))
   .catch(err => next(err));
 })
+
+///
+//
+// var csv = new Object ({
+//   participant: questionnaires[i].VP_id,
+//   questionnaire: questionnaires[i],
+//   APM: apm_aktuell,
+//   ICAA: icaa_aktuell,
+//   solutions: solutions_aktuell
+// }); 
+// console.log('csv'+csv)
+
+// csv_arr.push(csv)
+// }
+  
+//   // var jsonexport = require('jsonexport');
+//   // jsonexport(csv_arr,function(err, csv){
+//   //     if(err) return console.log(err);
+//   //     console.log(csv);
+//   // });
+
+// console.log('json'+csv_arr)
+
+//
+///
+
 
 //
 // Definition Funktion, die die gewünschte Anzahl an zufälligen Tasks der Typen Tetris und Neue_Wörter aus DB filtert
